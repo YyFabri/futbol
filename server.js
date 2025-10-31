@@ -12,14 +12,11 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // --- 3. Servir tu juego (el archivo HTML) ---
-// Cuando alguien entre a tu link de Render, le mandamos el juego.html
 app.get('/', (req, res) => {
-  // Asegúrate que el nombre 'juego.html' coincida con tu archivo
   res.sendFile(path.join(__dirname, 'juego.html')); 
 });
 
 // --- 4. Almacenamiento de salas ---
-// (Esto es temporal. Si el servidor se reinicia, se pierden las salas)
 const activeRooms = {};
 
 // Función para generar un código de 4 letras
@@ -29,77 +26,147 @@ function generateRoomCode() {
     for (let i = 0; i < 4; i++) {
         code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    // Si el código ya existe, genera otro
     return activeRooms[code] ? generateRoomCode() : code;
 }
 
-// --- 5. Lógica del Servidor (¡Lo más importante!) ---
+// Función para inicializar el estado de una sala
+function initializeRoomState() {
+    return {
+        players: {},
+        occupiedPositions: {
+            blue: { gk: false, 'def-left': false, 'def-right': false, 'fwd-left': false, 'fwd-right': false },
+            red: { gk: false, 'def-left': false, 'def-right': false, 'fwd-left': false, 'fwd-right': false }
+        },
+        gameState: {
+            ballPosition: { x: 0, y: 0.32, z: 0 },
+            ballVelocity: { x: 0, y: 0, z: 0 },
+            score: { blue: 0, red: 0 },
+            kickoffActive: true,
+            currentKickoffTeam: 'red'
+        }
+    };
+}
+
+// --- 5. Lógica del Servidor ---
 io.on('connection', (socket) => {
     console.log(`Usuario conectado: ${socket.id}`);
 
-    // --- Escuchar el evento 'createRoom' del cliente ---
+    // Crear sala
     socket.on('createRoom', () => {
         const roomCode = generateRoomCode();
-        activeRooms[roomCode] = {
-            players: [socket.id]
-        };
-
-        socket.join(roomCode); // Unir al creador a su propia sala
-        
+        activeRooms[roomCode] = initializeRoomState();
+        socket.join(roomCode);
         console.log(`Sala ${roomCode} creada por ${socket.id}`);
-        
-        // --- Responder al cliente con el evento 'roomCreated' ---
         socket.emit('roomCreated', roomCode);
     });
 
-    // --- Escuchar el evento 'joinRoom' del cliente ---
+    // Unirse a sala
     socket.on('joinRoom', (roomCode) => {
         const room = activeRooms[roomCode];
-
         if (!room) {
-            // Error: La sala no existe
             socket.emit('lobbyError', 'La sala no existe.');
             return;
         }
-
-        // Opcional: Limitar jugadores. Por ahora lo dejamos abierto.
-        // if (room.players.length >= 2) {
-        //     socket.emit('lobbyError', 'La sala está llena.');
-        //     return;
-        // }
-
-        room.players.push(socket.id);
-        socket.join(roomCode); // Unir al jugador a la sala
+        socket.join(roomCode);
         console.log(`Usuario ${socket.id} se unió a la sala ${roomCode}`);
-
-        // --- Responder a TODOS en la sala con 'joinSuccess' ---
-        io.to(roomCode).emit('joinSuccess', roomCode);
+        socket.emit('joinSuccess', roomCode);
+        socket.emit('roomState', {
+            occupiedPositions: room.occupiedPositions,
+            gameState: room.gameState,
+            players: room.players
+        });
     });
 
-    // --- Escuchar el evento 'playerReady' (que ya tienes en tu HTML) ---
+    // Jugador listo
     socket.on('playerReady', (data) => {
-        // 'data' contiene { room, team, position }
-        console.log(`Jugador ${socket.id} listo en sala ${data.room} como ${data.team} ${data.position}`);
-        
-        // Aquí es donde enviarás la info a los otros jugadores
-        // (Lo veremos en el próximo paso, por ahora solo lo registramos)
+        const room = activeRooms[data.room];
+        if (!room) {
+            socket.emit('lobbyError', 'La sala no existe.');
+            return;
+        }
+        if (room.occupiedPositions[data.team][data.position]) {
+            socket.emit('positionOccupied', 'Esta posición ya está ocupada.');
+            return;
+        }
+        room.occupiedPositions[data.team][data.position] = true;
+        room.players[socket.id] = {
+            team: data.team,
+            position: data.position,
+            nickname: data.nickname
+        };
+        console.log(`Jugador ${socket.id} (${data.nickname}) listo en sala ${data.room} como ${data.team} ${data.position}`);
+        io.to(data.room).emit('playerJoined', {
+            playerId: socket.id,
+            team: data.team,
+            position: data.position,
+            nickname: data.nickname
+        });
+        socket.emit('allPlayers', room.players);
     });
 
+    // Sincronizar movimiento
+    socket.on('playerMove', (data) => {
+        socket.to(data.room).emit('playerMoved', {
+            playerId: socket.id,
+            position: data.position,
+            rotation: data.rotation,
+            velocity: data.velocity
+        });
+    });
 
-    // --- Limpieza cuando un jugador se desconecta ---
+    // Sincronizar pelota
+    socket.on('ballUpdate', (data) => {
+        const room = activeRooms[data.room];
+        if (room) {
+            room.gameState.ballPosition = data.position;
+            room.gameState.ballVelocity = data.velocity;
+            socket.to(data.room).emit('ballSync', {
+                position: data.position,
+                velocity: data.velocity,
+                angularVelocity: data.angularVelocity
+            });
+        }
+    });
+
+    // Sincronizar goles
+    socket.on('goalScored', (data) => {
+        const room = activeRooms[data.room];
+        if (room) {
+            if (data.team === 'blue') {
+                room.gameState.score.blue++;
+            } else {
+                room.gameState.score.red++;
+            }
+            room.gameState.currentKickoffTeam = data.team === 'blue' ? 'red' : 'blue';
+            room.gameState.kickoffActive = true;
+            io.to(data.room).emit('goalUpdate', {
+                score: room.gameState.score,
+                currentKickoffTeam: room.gameState.currentKickoffTeam
+            });
+        }
+    });
+
+    // Saque inicial
+    socket.on('kickoffTaken', (data) => {
+        const room = activeRooms[data.room];
+        if (room) {
+            room.gameState.kickoffActive = false;
+            io.to(data.room).emit('kickoffComplete');
+        }
+    });
+
+    // Desconexión
     socket.on('disconnect', () => {
         console.log(`Usuario desconectado: ${socket.id}`);
-        // Recorrer todas las salas para sacar al jugador
         for (const roomCode in activeRooms) {
             const room = activeRooms[roomCode];
-            const playerIndex = room.players.indexOf(socket.id);
-
-            if (playerIndex !== -1) {
-                room.players.splice(playerIndex, 1);
+            const playerInfo = room.players[socket.id];
+            if (playerInfo) {
+                room.occupiedPositions[playerInfo.team][playerInfo.position] = false;
+                delete room.players[socket.id];
                 console.log(`Jugador ${socket.id} salió de la sala ${roomCode}`);
-
-                // Si la sala queda vacía, la eliminamos
-                if (room.players.length === 0) {
+                io.to(roomCode).emit('playerLeft', socket.id);
+                if (Object.keys(room.players).length === 0) {
                     delete activeRooms[roomCode];
                     console.log(`Sala ${roomCode} eliminada (vacía).`);
                 }
@@ -110,7 +177,6 @@ io.on('connection', (socket) => {
 });
 
 // --- 6. Iniciar el servidor ---
-// Render te dará un puerto con process.env.PORT
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
