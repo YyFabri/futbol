@@ -367,6 +367,23 @@
     transition: all 0.3s;
 }
 
+/* Badge que muestra el código de sala arriba a la izquierda cuando hay pausa */
+#room-code-badge {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    background: rgba(0,0,0,0.75);
+    color: #f59e0b;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    border: 2px solid rgba(246, 199, 69, 0.15);
+    box-shadow: 0 0 12px rgba(0,0,0,0.6);
+    z-index: 300;
+    display: none;
+    letter-spacing: 1px;
+}
+
 .menu-button:hover {
     background: #2563eb;
     transform: scale(1.05);
@@ -378,6 +395,9 @@
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
+    
+    <!-- Badge fijo para mostrar código de sala cuando está en pausa -->
+    <div id="room-code-badge" aria-hidden="true"></div>
     
     <div id="overlay">
         <div id="lobby-screen" style="display: block; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.95); padding: 40px 60px; border-radius: 20px; text-align: center; color: white; pointer-events: auto; border: 3px solid #3b82f6; width: 450px; max-width: 90vw;">
@@ -475,9 +495,14 @@
         <div class="control-item">
             <span class="key">CLICK DER</span> Mantener = Pase Raso
         </div>
+        <!-- Botón volver para regresar al menú de pausa sin cambiar posición/equipo -->
+        <div style="margin-top:18px;">
+            <button id="back-from-change-btn" class="menu-button" style="background:#ef4444;">Volver</button>
+        </div>
     </div>
 </div>
 <div id="pause-menu" style="display: none;">
+    <p id="pause-room-code" style="font-size: 1.1rem; color: #f59e0b; margin-bottom: 25px; letter-spacing: 1px;"></p>
     <h1>⚽ PAUSA</h1>
     <button id="resume-btn" class="menu-button">Continuar</button>
     <button id="change-position-btn" class="menu-button">Cambiar Posición</button>
@@ -528,6 +553,8 @@
     // Referencia a la pantalla de selección de equipo (que ahora es el paso 2)
     const teamSelectScreen = document.getElementById('team-select-screen');
     const pauseMenu = document.getElementById('pause-menu');
+    const roomCodeBadge = document.getElementById('room-code-badge');
+    const backFromChangeBtn = document.getElementById('back-from-change-btn');
 
     // --- LÓGICA DE BOTONES DEL LOBBY ---
     createRoomBtn.addEventListener('click', () => {
@@ -1132,10 +1159,28 @@ setupControls() {
     
     // Botón de cambiar posición
     changePositionBtn.addEventListener('click', () => {
+        // Mostrar la selección de equipo; ocultar el badge del código de sala
         pauseMenu.style.display = 'none';
         teamSelectScreen.style.display = 'block';
+        if (roomCodeBadge) roomCodeBadge.style.display = 'none';
         // NO solicitar pointer lock aquí
     });
+    
+    // Botón "Volver" dentro de la pantalla de selección para regresar al menú de pausa
+    if (backFromChangeBtn) {
+        backFromChangeBtn.addEventListener('click', () => {
+            teamSelectScreen.style.display = 'none';
+            pauseMenu.style.display = 'block';
+            // Actualizar y mostrar el badge con el código de sala (si existe)
+            const codeText = currentRoomCode ? `SALA: ${currentRoomCode}` : 'SALA: ----';
+            const pauseCodeElem = document.getElementById('pause-room-code');
+            if (pauseCodeElem) pauseCodeElem.textContent = codeText;
+            if (roomCodeBadge) {
+                roomCodeBadge.textContent = codeText;
+                roomCodeBadge.style.display = 'block';
+            }
+        });
+    }
     
     // Evento cuando cambia el estado del pointer lock
     document.addEventListener('pointerlockchange', () => {
@@ -1152,16 +1197,23 @@ setupControls() {
                     teamSelectScreen.style.display = 'block';
                     pauseMenu.style.display = 'none';
                     this.hud.style.display = 'none';
+                    if (roomCodeBadge) roomCodeBadge.style.display = 'none';
                 } else if (!locked && this.hasSelectedPosition) {
                     // Ya seleccionó, mostrar menú pausa
                     teamSelectScreen.style.display = 'none';
                     pauseMenu.style.display = 'block';
                     this.hud.style.display = 'block';
-G                } else {
+                    // Actualizar el código de sala en el menú y mostrar el badge arriba-izquierda
+                    const codeText = currentRoomCode ? `SALA: ${currentRoomCode}` : 'SALA: ----';
+                    const pauseCodeElem = document.getElementById('pause-room-code');
+                    if (pauseCodeElem) pauseCodeElem.textContent = codeText;
+                    if (roomCodeBadge) { roomCodeBadge.textContent = codeText; roomCodeBadge.style.display = 'block'; }
+                } else {
                     // Jugando
                     teamSelectScreen.style.display = 'none';
                     pauseMenu.style.display = 'none';
                     this.hud.style.display = 'block';
+                    if (roomCodeBadge) roomCodeBadge.style.display = 'none';
                 }
             
     });
