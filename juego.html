@@ -741,9 +741,7 @@
                             this.createOtherPlayer(playerId, p.team, p.position, p.nickname);
                         }
                     }
-                    if (Object.keys(players).length === 1) {
-                        this.isBallAuthority = true;
-                    }
+                   
                 });
 
                 socket.on('playerMoved', (data) => {
@@ -755,7 +753,7 @@
                 });
 
                 socket.on('ballSync', (data) => {
-                    if (!this.isBallAuthority) {
+                    
                         this.ballBody.position.set(data.position.x, data.position.y, data.position.z);
                         this.ballBody.velocity.set(data.velocity.x, data.velocity.y, data.velocity.z);
                         if (data.angularVelocity) {
@@ -766,14 +764,29 @@
                             );
                         }
                     }
-                });
+                );
 
            
 
 socket.on('goalUpdate', (data) => {
+                    let scoringTeam = 'blue';
+                    // Determinamos quién anotó comparando el score nuevo con el viejo
+                    if (data.score.red > this.score.red) {
+                        scoringTeam = 'red';
+                    }
+                    
                     this.score = data.score;
                     this.currentKickoffTeam = data.currentKickoffTeam;
                     this.updateScore();
+
+                    // --- INICIO DE LA SOLUCIÓN ---
+                    // 1. Mostrar el mensaje de "Gol" a TODOS
+                    const message = scoringTeam === 'blue' ? "¡Gol del equipo Azul!" : "¡Gol del equipo Rojo!";
+                    this.showKickIndicator(message);
+
+                    // 2. Llamar al reseteo para TODOS
+                    this.resetBall(); 
+                    // --- FIN DE LA SOLUCIÓN ---
                 });
 
                 socket.on('kickoffComplete', () => {
@@ -783,6 +796,24 @@ socket.on('goalUpdate', (data) => {
 
                 socket.on('playerLeft', (playerId) => {
                     this.removeOtherPlayer(playerId);
+                });
+
+                socket.on('playerPositionChanged', (data) => {
+                    if (data.playerId === socket.id) {
+                        // Es mi propio cambio, no necesito hacer nada
+                        return;
+                    }
+
+                    // Si el jugador ya existe, actualizamos su nick/color
+                    if (this.otherPlayers[data.playerId]) {
+                        const playerColor = data.team === 'blue' ? 0x3b82f6 : 0xef4444;
+                        this.otherPlayers[data.playerId].mesh.material.color.setHex(playerColor);
+                        this.otherPlayers[data.playerId].label.textContent = data.nickname;
+                        this.otherPlayers[data.playerId].label.style.color = data.team === 'blue' ? '#3b82f6' : '#ef4444';
+                    } else {
+                        // Si es un jugador nuevo que no teníamos, lo creamos
+                        this.createOtherPlayer(data.playerId, data.team, data.position, data.nickname);
+                    }
                 });
             }
 
@@ -1172,7 +1203,7 @@ socket.on('goalUpdate', (data) => {
                 }
 
                 this.updateScore();
-                this.resetBall();
+                
             }
            
             createPlayer() {
@@ -1451,6 +1482,31 @@ socket.on('goalUpdate', (data) => {
                     this.ballBody.angularVelocity.copy(spinForce);
                 }
                
+                        const now = Date.now();
+                        this.lastBallUpdate = now;
+                        socket.emit('ballUpdate', {
+                            room: currentRoomCode,
+                            position: {
+                                x: this.ballBody.position.x,
+                                y: this.ballBody.position.y,
+                                z: this.ballBody.position.z
+                            },
+                            velocity: {
+                                x: this.ballBody.velocity.x,
+                                y: this.ballBody.velocity.y,
+                                z: this.ballBody.velocity.z
+                            },
+                            angularVelocity: {
+                                x: this.ballBody.angularVelocity.x,
+                                y: this.ballBody.angularVelocity.y,
+                                z: this.ballBody.angularVelocity.z
+                            }
+                        });
+                    
+
+
+
+
                 this.isCharging = false;
                 this.powerMeter.style.display = 'none';
             }
@@ -1651,27 +1707,7 @@ socket.on('goalUpdate', (data) => {
                         });
                     }
 
-                    if (this.isBallAuthority && now - this.lastBallUpdate > 100) {
-                        this.lastBallUpdate = now;
-                        socket.emit('ballUpdate', {
-                            room: currentRoomCode,
-                            position: {
-                                x: this.ballBody.position.x,
-                                y: this.ballBody.position.y,
-                                z: this.ballBody.position.z
-                            },
-                            velocity: {
-                                x: this.ballBody.velocity.x,
-                                y: this.ballBody.velocity.y,
-                                z: this.ballBody.velocity.z
-                            },
-                            angularVelocity: {
-                                x: this.ballBody.angularVelocity.x,
-                                y: this.ballBody.angularVelocity.y,
-                                z: this.ballBody.angularVelocity.z
-                            }
-                        });
-                    }
+                    
                 } else {
                     this.updateCamera();
                 }
