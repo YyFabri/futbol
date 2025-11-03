@@ -84,10 +84,19 @@ io.on('connection', (socket) => {
             socket.emit('lobbyError', 'La sala no existe.');
             return;
         }
+        
+        // Si el jugador ya tenía una posición, liberarla primero
+        const previousPlayerInfo = room.players[socket.id];
+        if (previousPlayerInfo) {
+            room.occupiedPositions[previousPlayerInfo.team][previousPlayerInfo.position] = false;
+        }
+        
+        // Verificar si la posición está ocupada (por OTRO jugador)
         if (room.occupiedPositions[data.team][data.position]) {
             socket.emit('positionOccupied', 'Esta posición ya está ocupada.');
             return;
         }
+        
         room.occupiedPositions[data.team][data.position] = true;
         room.players[socket.id] = {
             team: data.team,
@@ -95,12 +104,15 @@ io.on('connection', (socket) => {
             nickname: data.nickname
         };
         console.log(`Jugador ${socket.id} (${data.nickname}) listo en sala ${data.room} como ${data.team} ${data.position}`);
-        io.to(data.room).emit('playerJoined', {
+        
+        // Notificar a TODOS (incluido el que cambió) sobre el cambio de posición
+        io.to(data.room).emit('playerPositionChanged', {
             playerId: socket.id,
             team: data.team,
             position: data.position,
             nickname: data.nickname
         });
+        
         socket.emit('allPlayers', room.players);
     });
 
@@ -152,6 +164,18 @@ io.on('connection', (socket) => {
         if (room) {
             room.gameState.kickoffActive = false;
             io.to(data.room).emit('kickoffComplete');
+        }
+    });
+
+    // Solicitar estado actualizado de la sala
+    socket.on('requestRoomState', (roomCode) => {
+        const room = activeRooms[roomCode];
+        if (room) {
+            socket.emit('roomState', {
+                occupiedPositions: room.occupiedPositions,
+                gameState: room.gameState,
+                players: room.players
+            });
         }
     });
 

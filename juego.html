@@ -595,6 +595,15 @@
 
         socket.on('roomState', (state) => {
             console.log('Estado de la sala recibido:', state);
+            
+            // Resetear todos los botones primero
+            document.querySelectorAll('.position-btn').forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            });
+            
+            // Marcar posiciones ocupadas
             for (const team in state.occupiedPositions) {
                 for (const pos in state.occupiedPositions[team]) {
                     if (state.occupiedPositions[team][pos]) {
@@ -759,8 +768,9 @@
                     }
                 });
 
+           
 
-                socket.on('goalUpdate', (data) => {
+socket.on('goalUpdate', (data) => {
                     this.score = data.score;
                     this.currentKickoffTeam = data.currentKickoffTeam;
                     this.updateScore();
@@ -1060,6 +1070,7 @@
                 const identifierWidth = 15;
                 const identifierDepth = 0.5;
                 
+                // IDENTIFICADOR AZUL (físico)
                 const blueGeo = new THREE.BoxGeometry(identifierWidth, identifierHeight, identifierDepth);
                 const blueMat = new THREE.MeshStandardMaterial({ 
                     color: 0x3b82f6, 
@@ -1074,6 +1085,18 @@
                 this.scene.add(blueIdentifier);
                 this.collidableObjects.push(blueIdentifier);
                 
+                // Crear cuerpo físico para el identificador azul
+                const blueShape = new CANNON.Box(new CANNON.Vec3(identifierWidth / 2, identifierHeight / 2, identifierDepth / 2));
+                const blueBody = new CANNON.Body({
+                    mass: 0,
+                    collisionFilterGroup: GROUP_WALL,
+                    collisionFilterMask: GROUP_PLAYER | GROUP_BALL
+                });
+                blueBody.addShape(blueShape);
+                blueBody.position.set(0, identifierHeight / 2, -this.fieldLength / 2 - 1);
+                this.world.addBody(blueBody);
+                
+                // IDENTIFICADOR ROJO (físico)
                 const redMat = new THREE.MeshStandardMaterial({ 
                     color: 0xef4444, 
                     emissive: 0xef4444, 
@@ -1086,6 +1109,17 @@
                 redIdentifier.castShadow = true;
                 this.scene.add(redIdentifier);
                 this.collidableObjects.push(redIdentifier);
+                
+                // Crear cuerpo físico para el identificador rojo
+                const redShape = new CANNON.Box(new CANNON.Vec3(identifierWidth / 2, identifierHeight / 2, identifierDepth / 2));
+                const redBody = new CANNON.Body({
+                    mass: 0,
+                    collisionFilterGroup: GROUP_WALL,
+                    collisionFilterMask: GROUP_PLAYER | GROUP_BALL
+                });
+                redBody.addShape(redShape);
+                redBody.position.set(0, identifierHeight / 2, this.fieldLength / 2 + 1);
+                this.world.addBody(redBody);
             }
 
             createBall() {
@@ -1248,6 +1282,9 @@
                     pauseMenu.style.display = 'none';
                     teamSelectScreen.style.display = 'block';
                     if (roomCodeBadge) roomCodeBadge.style.display = 'none';
+                    
+                    // Solicitar el estado actualizado de la sala al servidor
+                    socket.emit('requestRoomState', currentRoomCode);
                 });
                 
                 if (backFromChangeBtn) {
