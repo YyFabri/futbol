@@ -32,175 +32,142 @@
         }
        
         #team-select-screen {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.95);
-    padding: 40px 60px;
-    border-radius: 20px;
-    text-align: center;
-    color: white;
-    pointer-events: auto;
-    border: 3px solid #3b82f6;
-    max-width: 90vw;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-#team-select-screen h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-    color: #3b82f6;
-    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-}
-
-#team-select-screen p {
-    font-size: 1.2rem;
-    margin: 10px 0;
-    opacity: 0.9;
-}
-
-#teams-container {
-    display: flex;
-    gap: 40px;
-    justify-content: center;
-    margin: 30px 0;
-    flex-wrap: wrap;
-}
-
-.team-formation {
-    flex: 1;
-    min-width: 250px;
-    max-width: 350px;
-    padding: 20px;
-    border-radius: 15px;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.team-formation[data-team="blue"] {
-    border: 2px solid #3b82f6;
-}
-
-.team-formation[data-team="red"] {
-    border: 2px solid #ef4444;
-}
-
-.team-formation h2 {
-    margin-bottom: 20px;
-    font-size: 1.5rem;
-}
-
-.team-formation[data-team="blue"] h2 {
-    color: #3b82f6;
-}
-
-.team-formation[data-team="red"] h2 {
-    color: #ef4444;
-}
-
-.formation {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.position-row {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-}
-
-.position-btn {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    border: 3px solid;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.position-btn[data-team="blue"] {
-    border-color: #3b82f6;
-}
-
-.position-btn[data-team="red"] {
-    border-color: #ef4444;
-}
-
-.position-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px currentColor;
-}
-
-.position-btn[data-team="blue"]:hover {
-    background: rgba(59, 130, 246, 0.3);
-}
-
-.position-btn[data-team="red"]:hover {
-    background: rgba(239, 68, 68, 0.3);
-}
-
-.pos-label {
-    font-size: 0.9rem;
-}
-
-#team-select-screen .controls {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 2px solid rgba(59, 130, 246, 0.3);
-}
-
-#team-select-screen .control-item {
-    margin: 8px 0;
-    font-size: 1rem;
-}
-
-#team-select-screen .key {
-    display: inline-block;
-    background: #3b82f6;
-    padding: 4px 12px;
-    border-radius: 6px;
-    margin: 0 5px;
-    font-weight: bold;
-}
-       
-        #start-screen:hover {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.95);
-            transform: translate(-50%, -50%) scale(1.05);
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            pointer-events: auto;
+            border: 3px solid #3b82f6;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
         }
-       
-        #start-screen h1 {
+
+        #team-select-screen h1 {
             font-size: 3rem;
             margin-bottom: 20px;
             color: #3b82f6;
             text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
         }
-       
-        #start-screen p {
+
+        #team-select-screen p {
             font-size: 1.2rem;
             margin: 10px 0;
             opacity: 0.9;
         }
-       
-        #start-screen .controls {
+
+        #teams-container {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .team-formation {
+            flex: 1;
+            min-width: 250px;
+            max-width: 350px;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .team-formation[data-team="blue"] {
+            border: 2px solid #3b82f6;
+        }
+
+        .team-formation[data-team="red"] {
+            border: 2px solid #ef4444;
+        }
+
+        .team-formation h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .team-formation[data-team="blue"] h2 {
+            color: #3b82f6;
+        }
+
+        .team-formation[data-team="red"] h2 {
+            color: #ef4444;
+        }
+
+        .formation {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .position-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .position-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .position-btn[data-team="blue"] {
+            border-color: #3b82f6;
+        }
+
+        .position-btn[data-team="red"] {
+            border-color: #ef4444;
+        }
+
+        .position-btn:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .position-btn[data-team="blue"]:hover:not(:disabled) {
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        .position-btn[data-team="red"]:hover:not(:disabled) {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .position-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .pos-label {
+            font-size: 0.9rem;
+        }
+
+        #team-select-screen .controls {
             margin-top: 30px;
             padding-top: 20px;
             border-top: 2px solid rgba(59, 130, 246, 0.3);
         }
-       
-        #start-screen .control-item {
+
+        #team-select-screen .control-item {
             margin: 8px 0;
             font-size: 1rem;
         }
-       
-        #start-screen .key {
+
+        #team-select-screen .key {
             display: inline-block;
             background: #3b82f6;
             padding: 4px 12px;
@@ -331,183 +298,194 @@
         }
 
         #pause-menu {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.95);
-    padding: 40px 60px;
-    border-radius: 20px;
-    text-align: center;
-    color: white;
-    pointer-events: auto;
-    border: 3px solid #3b82f6;
-    z-index: 200;
-}
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            pointer-events: auto;
+            border: 3px solid #3b82f6;
+            z-index: 200;
+        }
 
-#pause-menu h1 {
-    font-size: 3rem;
-    margin-bottom: 30px;
-    color: #3b82f6;
-    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-}
+        #pause-menu h1 {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            color: #3b82f6;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
 
-.menu-button {
-    display: block;
-    width: 100%;
-    padding: 15px 30px;
-    margin: 15px 0;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: white;
-    background: #3b82f6;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
+        .menu-button {
+            display: block;
+            width: 100%;
+            padding: 15px 30px;
+            margin: 15px 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            background: #3b82f6;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
 
-/* Badge que muestra el código de sala arriba a la izquierda cuando hay pausa */
-#room-code-badge {
-    position: fixed;
-    top: 14px;
-    left: 14px;
-    background: rgba(0,0,0,0.75);
-    color: #f59e0b;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-weight: bold;
-    border: 2px solid rgba(246, 199, 69, 0.15);
-    box-shadow: 0 0 12px rgba(0,0,0,0.6);
-    z-index: 300;
-    display: none;
-    letter-spacing: 1px;
-}
+        #room-code-badge {
+            position: fixed;
+            top: 14px;
+            left: 14px;
+            background: rgba(0,0,0,0.75);
+            color: #f59e0b;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            border: 2px solid rgba(246, 199, 69, 0.15);
+            box-shadow: 0 0 12px rgba(0,0,0,0.6);
+            z-index: 300;
+            display: none;
+            letter-spacing: 1px;
+        }
 
-.menu-button:hover {
-    background: #2563eb;
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-}
+        .menu-button:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
 
+        .player-label {
+            position: fixed;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
+            white-space: nowrap;
+            background: rgba(0,0,0,0.5);
+            padding: 4px 8px;
+            border-radius: 4px;
+            transform: translate(-50%, -50%);
+        }
     </style>
 
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     
-    <!-- Badge fijo para mostrar código de sala cuando está en pausa -->
     <div id="room-code-badge" aria-hidden="true"></div>
     
     <div id="overlay">
         <div id="lobby-screen" style="display: block; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.95); padding: 40px 60px; border-radius: 20px; text-align: center; color: white; pointer-events: auto; border: 3px solid #3b82f6; width: 450px; max-width: 90vw;">
-    <h1>⚽ PRO SOCCER ONLINE</h1>
-    <p style="font-size: 1.1rem; margin-top: 10px; opacity: 0.8;">Crea una sala o únete a una existente</p>
-    
-    <div style="margin-top: 30px;">
-        <input type="text" id="nickname-input" placeholder="TU NICKNAME" maxlength="12" style="width: 100%; padding: 12px; font-size: 1.2rem; text-align: center; background: rgba(255, 255, 255, 0.1); border: 2px solid #3b82f6; color: white; border-radius: 8px; margin-bottom: 15px;">
-        <button id="create-room-btn" class="menu-button">Crear Sala</button>
-    </div>
-    
-    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid rgba(59, 130, 246, 0.3);">
-        <p style="font-size: 1.1rem; margin-bottom: 15px;">Unirse con Código</p>
-        <input type="text" id="room-code-input" placeholder="INGRESA CÓDIGO" style="width: 100%; padding: 12px; font-size: 1.2rem; text-align: center; background: rgba(255, 255, 255, 0.1); border: 2px solid #3b82f6; color: white; border-radius: 8px; text-transform: uppercase;">
-        <button id="join-room-btn" class="menu-button" style="margin-top: 15px; background: #22c55e;">Unirse</button>
-    </div>
-    
-    <p id="lobby-error" style="color: #ef4444; margin-top: 20px; display: none;"></p>
-    <p id="lobby-loading" style="color: #f59e0b; margin-top: 20px; display: none;">Conectando...</p>
-</div>
+            <h1>⚽ PRO SOCCER ONLINE</h1>
+            <p style="font-size: 1.1rem; margin-top: 10px; opacity: 0.8;">Crea una sala o únete a una existente</p>
+            
+            <div style="margin-top: 30px;">
+                <input type="text" id="nickname-input" placeholder="TU NICKNAME" maxlength="12" style="width: 100%; padding: 12px; font-size: 1.2rem; text-align: center; background: rgba(255, 255, 255, 0.1); border: 2px solid #3b82f6; color: white; border-radius: 8px; margin-bottom: 15px;">
+                <button id="create-room-btn" class="menu-button">Crear Sala</button>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid rgba(59, 130, 246, 0.3);">
+                <p style="font-size: 1.1rem; margin-bottom: 15px;">Unirse con Código</p>
+                <input type="text" id="room-code-input" placeholder="INGRESA CÓDIGO" style="width: 100%; padding: 12px; font-size: 1.2rem; text-align: center; background: rgba(255, 255, 255, 0.1); border: 2px solid #3b82f6; color: white; border-radius: 8px; text-transform: uppercase;">
+                <button id="join-room-btn" class="menu-button" style="margin-top: 15px; background: #22c55e;">Unirse</button>
+            </div>
+            
+            <p id="lobby-error" style="color: #ef4444; margin-top: 20px; display: none;"></p>
+            <p id="lobby-loading" style="color: #f59e0b; margin-top: 20px; display: none;">Conectando...</p>
+        </div>
+
         <div id="team-select-screen" style="display: none;">
-    <h1>⚽ PRO SOCCER</h1>
-    <p style="font-size: 1.3rem; margin: 20px 0;">Selecciona tu posición</p>
-    
-    <div id="teams-container">
-        <!-- EQUIPO AZUL -->
-        <div class="team-formation" data-team="blue">
-            <h2>EQUIPO AZUL</h2>
-            <div class="formation">
-                <div class="position-row">
-                    <button class="position-btn" data-team="blue" data-position="gk">
-                        <span class="pos-label">ARQ</span>
-                    </button>
+            <h1>⚽ PRO SOCCER</h1>
+            <p style="font-size: 1.3rem; margin: 20px 0;">Selecciona tu posición</p>
+            
+            <div id="teams-container">
+                <div class="team-formation" data-team="blue">
+                    <h2>EQUIPO AZUL</h2>
+                    <div class="formation">
+                        <div class="position-row">
+                            <button class="position-btn" data-team="blue" data-position="gk">
+                                <span class="pos-label">ARQ</span>
+                            </button>
+                        </div>
+                        <div class="position-row">
+                            <button class="position-btn" data-team="blue" data-position="def-left">
+                                <span class="pos-label">DEF</span>
+                            </button>
+                            <button class="position-btn" data-team="blue" data-position="def-right">
+                                <span class="pos-label">DEF</span>
+                            </button>
+                        </div>
+                        <div class="position-row">
+                            <button class="position-btn" data-team="blue" data-position="fwd-left">
+                                <span class="pos-label">DEL</span>
+                            </button>
+                            <button class="position-btn" data-team="blue" data-position="fwd-right">
+                                <span class="pos-label">DEL</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="position-row">
-                    <button class="position-btn" data-team="blue" data-position="def-left">
-                        <span class="pos-label">DEF</span>
-                    </button>
-                    <button class="position-btn" data-team="blue" data-position="def-right">
-                        <span class="pos-label">DEF</span>
-                    </button>
+                
+                <div class="team-formation" data-team="red">
+                    <h2>EQUIPO ROJO</h2>
+                    <div class="formation">
+                        <div class="position-row">
+                            <button class="position-btn" data-team="red" data-position="fwd-left">
+                                <span class="pos-label">DEL</span>
+                            </button>
+                            <button class="position-btn" data-team="red" data-position="fwd-right">
+                                <span class="pos-label">DEL</span>
+                            </button>
+                        </div>
+                        <div class="position-row">
+                            <button class="position-btn" data-team="red" data-position="def-left">
+                                <span class="pos-label">DEF</span>
+                            </button>
+                            <button class="position-btn" data-team="red" data-position="def-right">
+                                <span class="pos-label">DEF</span>
+                            </button>
+                        </div>
+                        <div class="position-row">
+                            <button class="position-btn" data-team="red" data-position="gk">
+                                <span class="pos-label">ARQ</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="position-row">
-                    <button class="position-btn" data-team="blue" data-position="fwd-left">
-                        <span class="pos-label">DEL</span>
-                    </button>
-                    <button class="position-btn" data-team="blue" data-position="fwd-right">
-                        <span class="pos-label">DEL</span>
-                    </button>
+            </div>
+            
+            <div class="controls">
+                <div class="control-item">
+                    <span class="key">W A S D</span> Movimiento
+                </div>
+                <div class="control-item">
+                    <span class="key">SHIFT</span> Correr
+                </div>
+                <div class="control-item">
+                    <span class="key">MOUSE</span> Mirar
+                </div>
+                <div class="control-item" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+                    <span class="key">CLICK IZQ</span> Mantener = Tiro + Efecto
+                </div>
+                <div class="control-item">
+                    <span class="key">CLICK DER</span> Mantener = Pase Raso
+                </div>
+                <div style="margin-top:18px;">
+                    <button id="back-from-change-btn" class="menu-button" style="background:#ef4444;">Volver</button>
                 </div>
             </div>
         </div>
-        
-        <!-- EQUIPO ROJO -->
-        <div class="team-formation" data-team="red">
-            <h2>EQUIPO ROJO</h2>
-            <div class="formation">
-                <div class="position-row">
-                    <button class="position-btn" data-team="red" data-position="fwd-left">
-                        <span class="pos-label">DEL</span>
-                    </button>
-                    <button class="position-btn" data-team="red" data-position="fwd-right">
-                        <span class="pos-label">DEL</span>
-                    </button>
-                </div>
-                <div class="position-row">
-                    <button class="position-btn" data-team="red" data-position="def-left">
-                        <span class="pos-label">DEF</span>
-                    </button>
-                    <button class="position-btn" data-team="red" data-position="def-right">
-                        <span class="pos-label">DEF</span>
-                    </button>
-                </div>
-                <div class="position-row">
-                    <button class="position-btn" data-team="red" data-position="gk">
-                        <span class="pos-label">ARQ</span>
-                    </button>
-                </div>
-            </div>
+
+        <div id="pause-menu" style="display: none;">
+            <p id="pause-room-code" style="font-size: 1.1rem; color: #f59e0b; margin-bottom: 25px; letter-spacing: 1px;"></p>
+            <h1>⚽ PAUSA</h1>
+            <button id="resume-btn" class="menu-button">Continuar</button>
+            <button id="change-position-btn" class="menu-button">Cambiar Posición</button>
         </div>
-    </div>
-    
-    <div class="controls">
-        <div class="control-item">
-            <span class="key">W A S D</span> Movimiento
-        </div>
-        <div class="control-item">
-            <span class="key">SHIFT</span> Correr
-        </div>
-        <div class="control-item">
-            <span class="key">MOUSE</span> Mirar
-        </div>
-        <div class="control-item" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
-            <span class="key">CLICK IZQ</span> Mantener = Tiro + Efecto
-        </div>
-        <div class="control-item">
-            <span class="key">CLICK DER</span> Mantener = Pase Raso
-        </div>
-        <!-- Botón volver para regresar al menú de pausa sin cambiar posición/equipo -->
-        <div style="margin-top:18px;">
-            <button id="back-from-change-btn" class="menu-button" style="background:#ef4444;">Volver</button>
-        </div>
-    </div>
-</div>
-<div id="pause-menu" style="display: none;">
-    <p id="pause-room-code" style="font-size: 1.1rem; color: #f59e0b; margin-bottom: 25px; letter-spacing: 1px;"></p>
-    <h1>⚽ PAUSA</h1>
-    <button id="resume-btn" class="menu-button">Continuar</button>
-    <button id="change-position-btn" class="menu-button">Cambiar Posición</button>
-</div>
+
         <div id="hud">
             <div id="score">
                 <span class="team-blue">0</span> - <span class="team-red">0</span>
@@ -539,98 +517,124 @@
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
         import * as CANNON from 'https://cdn.skypack.dev/cannon-es@0.20.0';
        
-        // --- INICIALIZAR SOCKET.IO ---
-    const socket = io();
-    let currentRoomCode = null; // Guardar el código de la sala actual
+        const socket = io();
+        let currentRoomCode = null;
+        let playerNickname = '';
 
-    // --- REFERENCIAS A LA NUEVA PANTALLA DE LOBBY ---
-    const lobbyScreen = document.getElementById('lobby-screen');
-    const createRoomBtn = document.getElementById('create-room-btn');
-    const joinRoomBtn = document.getElementById('join-room-btn');
-    const roomCodeInput = document.getElementById('room-code-input');
-    const lobbyError = document.getElementById('lobby-error');
-    const lobbyLoading = document.getElementById('lobby-loading');
-    
-    // Referencia a la pantalla de selección de equipo (que ahora es el paso 2)
-    const teamSelectScreen = document.getElementById('team-select-screen');
-    const pauseMenu = document.getElementById('pause-menu');
-    const roomCodeBadge = document.getElementById('room-code-badge');
-    const backFromChangeBtn = document.getElementById('back-from-change-btn');
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const createRoomBtn = document.getElementById('create-room-btn');
+        const joinRoomBtn = document.getElementById('join-room-btn');
+        const roomCodeInput = document.getElementById('room-code-input');
+        const nicknameInput = document.getElementById('nickname-input');
+        const lobbyError = document.getElementById('lobby-error');
+        const lobbyLoading = document.getElementById('lobby-loading');
+        const teamSelectScreen = document.getElementById('team-select-screen');
+        const pauseMenu = document.getElementById('pause-menu');
+        const roomCodeBadge = document.getElementById('room-code-badge');
+        const backFromChangeBtn = document.getElementById('back-from-change-btn');
 
-    // --- LÓGICA DE BOTONES DEL LOBBY ---
-    createRoomBtn.addEventListener('click', () => {
-        lobbyLoading.textContent = "Creando sala...";
-        lobbyLoading.style.display = 'block';
-        lobbyError.style.display = 'none';
-        socket.emit('createRoom'); // 1. Pide al servidor crear una sala
-    });
+        createRoomBtn.addEventListener('click', () => {
+            const nickname = nicknameInput.value.trim();
+            if (!nickname || nickname.length < 2) {
+                lobbyError.textContent = 'Ingresa un nickname válido (mínimo 2 caracteres).';
+                lobbyError.style.display = 'block';
+                return;
+            }
+            playerNickname = nickname;
+            lobbyLoading.textContent = "Creando sala...";
+            lobbyLoading.style.display = 'block';
+            lobbyError.style.display = 'none';
+            socket.emit('createRoom');
+        });
 
-    joinRoomBtn.addEventListener('click', () => {
-        const code = roomCodeInput.value.toUpperCase();
-        if (code.length !== 4) {
-            lobbyError.textContent = 'El código debe tener 4 letras.';
-            lobbyError.style.display = 'block';
-            return;
-        }
-        lobbyLoading.textContent = "Uniéndose a la sala...";
-        lobbyLoading.style.display = 'block';
-        lobbyError.style.display = 'none';
-        socket.emit('joinRoom', code); // 2. Pide al servidor unirse a una sala
-    });
+        joinRoomBtn.addEventListener('click', () => {
+            const nickname = nicknameInput.value.trim();
+            if (!nickname || nickname.length < 2) {
+                lobbyError.textContent = 'Ingresa un nickname válido (mínimo 2 caracteres).';
+                lobbyError.style.display = 'block';
+                return;
+            }
+            const code = roomCodeInput.value.toUpperCase();
+            if (code.length !== 4) {
+                lobbyError.textContent = 'El código debe tener 4 letras.';
+                lobbyError.style.display = 'block';
+                return;
+            }
+            playerNickname = nickname;
+            lobbyLoading.textContent = "Uniéndose a la sala...";
+            lobbyLoading.style.display = 'block';
+            lobbyError.style.display = 'none';
+            socket.emit('joinRoom', code);
+        });
 
-
-    // --- ESCUCHAR RESPUESTAS DEL SERVIDOR ---
-
-    socket.on('connect', () => {
-        lobbyLoading.style.display = 'none';
-    });
-    
-    // 1. El servidor confirma que la sala se creó
-    socket.on('roomCreated', (roomCode) => {
-        currentRoomCode = roomCode;
-        console.log(`Sala creada con éxito: ${roomCode}`);
+        socket.on('connect', () => {
+            lobbyLoading.style.display = 'none';
+        });
         
-        // Oculta lobby, muestra selección de equipo
-        lobbyScreen.style.display = 'none';
-        lobbyLoading.style.display = 'none';
-        teamSelectScreen.style.display = 'block'; 
-    });
+        socket.on('roomCreated', (roomCode) => {
+            currentRoomCode = roomCode;
+            console.log(`Sala creada con éxito: ${roomCode}`);
+            lobbyScreen.style.display = 'none';
+            lobbyLoading.style.display = 'none';
+            teamSelectScreen.style.display = 'block'; 
+        });
 
-    // 2. El servidor confirma que nos unimos (ya sea creando o uniéndose)
-    socket.on('joinSuccess', (roomCode) => {
-        currentRoomCode = roomCode;
-        console.log(`Unido con éxito a la sala: ${roomCode}`);
+        socket.on('joinSuccess', (roomCode) => {
+            currentRoomCode = roomCode;
+            console.log(`Unido con éxito a la sala: ${roomCode}`);
+            lobbyScreen.style.display = 'none';
+            lobbyLoading.style.display = 'none';
+            teamSelectScreen.style.display = 'block';
+        });
 
-        // Oculta lobby, muestra selección de equipo
-        lobbyScreen.style.display = 'none';
-        lobbyLoading.style.display = 'none';
-        teamSelectScreen.style.display = 'block';
-    });
+        socket.on('lobbyError', (message) => {
+            lobbyLoading.style.display = 'none';
+            lobbyError.textContent = message;
+            lobbyError.style.display = 'block';
+        });
 
-    // 3. El servidor nos avisa de un error
-    socket.on('lobbyError', (message) => {
-        lobbyLoading.style.display = 'none';
-        lobbyError.textContent = message;
-        lobbyError.style.display = 'block';
-    });
+        socket.on('roomState', (state) => {
+            console.log('Estado de la sala recibido:', state);
+            for (const team in state.occupiedPositions) {
+                for (const pos in state.occupiedPositions[team]) {
+                    if (state.occupiedPositions[team][pos]) {
+                        const btn = document.querySelector(`.position-btn[data-team="${team}"][data-position="${pos}"]`);
+                        if (btn) {
+                            btn.disabled = true;
+                            btn.style.opacity = '0.5';
+                            btn.style.cursor = 'not-allowed';
+                        }
+                    }
+                }
+            }
+        });
 
-        // --- DEFINICIÓN DE GRUPOS DE COLISIÓN ---
+        socket.on('positionOccupied', (message) => {
+            alert(message);
+            teamSelectScreen.style.display = 'block';
+        });
+
         const GROUP_PLAYER = 1;
         const GROUP_BALL = 2;
         const GROUP_GROUND = 4;
         const GROUP_WALL = 8;
-        const GROUP_GOAL = 16; // Grupo para las líneas de gol
+        const GROUP_GOAL = 16;
         const GROUP_NET = 32;
         const GROUP_EVERYTHING = GROUP_PLAYER | GROUP_BALL | GROUP_GROUND | GROUP_WALL | GROUP_GOAL | GROUP_NET;
-       
 
         class SoccerGame {
             constructor() {
                 this.fieldWidth = 50;
                 this.fieldLength = 90;
                 this.centerCircleRadius = 5;
-                this.ballRadius = 0.22; // Necesitamos el radio aquí para la detección de gol
+                this.ballRadius = 0.22;
                 this.goalDepth = 3;
+                this.goalHeight = 4;
+
+                this.otherPlayers = {};
+                this.isBallAuthority = false;
+                this.lastBallUpdate = 0;
+                this.lastPlayerUpdate = 0;
 
                 this.scene = new THREE.Scene();
                 this.scene.background = new THREE.Color(0x87ceeb);
@@ -649,8 +653,8 @@
                 this.raycaster = new THREE.Raycaster();
                 this.collidableObjects = [];
 
-                this.worldGravity = -17;   // gravedad para pelota y resto
-                this.playerGravity = -25;  // gravedad específica para jugador
+                this.worldGravity = -17;
+                this.playerGravity = -25;
 
                 this.world = new CANNON.World();
                 this.world.gravity.set(0, this.worldGravity, 0);
@@ -689,7 +693,6 @@
                 this.swerveAccumX = 0;
                 this.swerveAccumY = 0;
                
-                
                 this.hud = document.getElementById('hud');
                 this.scoreDisplay = document.getElementById('score');
                 this.staminaFill = document.getElementById('stamina-fill');
@@ -705,14 +708,137 @@
                 this.createBall();
                 this.createPlayer();
                 this.setupControls();
+                this.setupMultiplayer();
                
                 window.addEventListener('resize', () => this.onResize());
                
-                // Aplicar máscara de saque inicial
                 this.setPlayerKickoffCollision(true);
 
                 this.animate();
                 this.showKickIndicator(`¡Saque ${this.currentKickoffTeam === 'blue' ? 'Azul' : 'Rojo'}!`);
+            }
+
+            setupMultiplayer() {
+                socket.on('playerJoined', (data) => {
+                    if (data.playerId !== socket.id) {
+                        this.createOtherPlayer(data.playerId, data.team, data.position, data.nickname);
+                    }
+                });
+
+                socket.on('allPlayers', (players) => {
+                    for (const playerId in players) {
+                        if (playerId !== socket.id && !this.otherPlayers[playerId]) {
+                            const p = players[playerId];
+                            this.createOtherPlayer(playerId, p.team, p.position, p.nickname);
+                        }
+                    }
+                    if (Object.keys(players).length === 1) {
+                        this.isBallAuthority = true;
+                    }
+                });
+
+                socket.on('playerMoved', (data) => {
+                    const otherPlayer = this.otherPlayers[data.playerId];
+                    if (otherPlayer) {
+                        otherPlayer.targetPosition = new THREE.Vector3(data.position.x, data.position.y, data.position.z);
+                        otherPlayer.targetRotation = data.rotation;
+                    }
+                });
+
+                socket.on('ballSync', (data) => {
+                    if (!this.isBallAuthority) {
+                        this.ballBody.position.set(data.position.x, data.position.y, data.position.z);
+                        this.ballBody.velocity.set(data.velocity.x, data.velocity.y, data.velocity.z);
+                        if (data.angularVelocity) {
+                            this.ballBody.angularVelocity.set(
+                                data.angularVelocity.x,
+                                data.angularVelocity.y,
+                                data.angularVelocity.z
+                            );
+                        }
+                    }
+                });
+
+
+                socket.on('goalUpdate', (data) => {
+                    this.score = data.score;
+                    this.currentKickoffTeam = data.currentKickoffTeam;
+                    this.updateScore();
+                });
+
+                socket.on('kickoffComplete', () => {
+                    this.kickoffActive = false;
+                    this.setPlayerKickoffCollision(false);
+                });
+
+                socket.on('playerLeft', (playerId) => {
+                    this.removeOtherPlayer(playerId);
+                });
+            }
+
+            createOtherPlayer(playerId, team, position, nickname) {
+                const radius = 0.5;
+                const height = 1.8;
+                const playerGeo = new THREE.CapsuleGeometry(radius, height - radius * 2, 16, 16);
+                const playerColor = team === 'blue' ? 0x3b82f6 : 0xef4444;
+                const playerMat = new THREE.MeshStandardMaterial({ 
+                    color: playerColor, 
+                    metalness: 0.3, 
+                    roughness: 0.7,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const playerMesh = new THREE.Mesh(playerGeo, playerMat);
+                playerMesh.castShadow = true;
+                this.scene.add(playerMesh);
+
+                const label = document.createElement('div');
+                label.className = 'player-label';
+                label.textContent = nickname;
+                label.style.color = team === 'blue' ? '#3b82f6' : '#ef4444';
+                document.getElementById('overlay').appendChild(label);
+
+                this.otherPlayers[playerId] = {
+                    mesh: playerMesh,
+                    label: label,
+                    targetPosition: this.getStartPosition(team, position),
+                    targetRotation: 0
+                };
+
+                playerMesh.position.copy(this.getStartPosition(team, position));
+            }
+
+            getStartPosition(team, position) {
+                const positions = {
+                    blue: {
+                        'gk': { x: 0, y: 1.4, z: -40 },
+                        'def-left': { x: -8, y: 1.4, z: -25 },
+                        'def-right': { x: 8, y: 1.4, z: -25 },
+                        'fwd-left': { x: -8, y: 1.4, z: -10 },
+                        'fwd-right': { x: 8, y: 1.4, z: -10 }
+                    },
+                    red: {
+                        'gk': { x: 0, y: 1.4, z: 40 },
+                        'def-left': { x: -8, y: 1.4, z: 25 },
+                        'def-right': { x: 8, y: 1.4, z: 25 },
+                        'fwd-left': { x: -8, y: 1.4, z: 10 },
+                        'fwd-right': { x: 8, y: 1.4, z: 10 }
+                    }
+                };
+                return new THREE.Vector3(
+                    positions[team][position].x,
+                    positions[team][position].y,
+                    positions[team][position].z
+                );
+            }
+
+            removeOtherPlayer(playerId) {
+                const player = this.otherPlayers[playerId];
+                if (player) {
+                    this.scene.remove(player.mesh);
+                    player.label.remove();
+                    delete this.otherPlayers[playerId];
+                }
             }
            
             setupLighting() {
@@ -748,14 +874,13 @@
                 grass.receiveShadow = true;
                 this.scene.add(grass);
 
-                // Añadir el mesh del suelo a los objetos que pueden colisionar con la cámara
                 this.collidableObjects.push(grass);
                 
                 const groundShape = new CANNON.Plane();
                 this.groundBody = new CANNON.Body({
                     mass: 0,
                     collisionFilterGroup: GROUP_GROUND,
-                    collisionFilterMask: GROUP_PLAYER | GROUP_BALL // El suelo colisiona con jugador y pelota
+                    collisionFilterMask: GROUP_PLAYER | GROUP_BALL
                 });
                 this.groundBody.addShape(groundShape);
                 this.groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
@@ -791,7 +916,7 @@
             createPenaltyAreas(fieldWidth, fieldLength) {
                 const areaWidth = 20; const areaDepth = 12;
                 const areaMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.15, side: THREE.DoubleSide });
-                const areaGeo = new THREE.PlaneGeometry(areaWidth, areaDepth); // Reutilizar geometría
+                const areaGeo = new THREE.PlaneGeometry(areaWidth, areaDepth);
                 const areaNorth = new THREE.Mesh(areaGeo, areaMat);
                 areaNorth.rotation.x = -Math.PI / 2;
                 areaNorth.position.set(0, 0.06, fieldLength / 2 - areaDepth / 2);
@@ -803,95 +928,79 @@
             }
            
             createWalls(width, length) {
-    const wallHeight = 20; // altura de las paredes
-    const goalWidth = 12;
-    const goalHeight = 4;
-    const wallMat = new CANNON.Material({ friction: 0.1, restitution: 0.9 });
+                const wallHeight = 20;
+                const goalWidth = 12;
+                const wallMat = new CANNON.Material({ friction: 0.1, restitution: 0.9 });
 
-    // Tamaño y centros de las dos secciones que quedan a los lados del arco
-    const sideSegmentWidth = (width - goalWidth) / 2;
-    const leftSegmentCenterX = -(width + goalWidth) / 4;
-    const rightSegmentCenterX = (width + goalWidth) / 4;
-    const backZ = length / 2 + 0.5;
-    const frontZ = -length / 2 - 0.5;
+                const sideSegmentWidth = (width - goalWidth) / 2;
+                const leftSegmentCenterX = -(width + goalWidth) / 4;
+                const rightSegmentCenterX = (width + goalWidth) / 4;
+                const backZ = length / 2 + 0.5;
+                const frontZ = -length / 2 - 0.5;
 
-    const walls = [
-        // Paredes laterales
-        { x: width / 2 + 0.5, z: 0, w: 1, d: length },   // derecha
-        { x: -width / 2 - 0.5, z: 0, w: 1, d: length },  // izquierda
+                const walls = [
+                    { x: width / 2 + 0.5, z: 0, w: 1, d: length },
+                    { x: -width / 2 - 0.5, z: 0, w: 1, d: length },
+                    { x: leftSegmentCenterX, z: backZ, w: sideSegmentWidth, d: 1 },
+                    { x: rightSegmentCenterX, z: backZ, w: sideSegmentWidth, d: 1 },
+                    { x: leftSegmentCenterX, z: frontZ, w: sideSegmentWidth, d: 1 },
+                    { x: rightSegmentCenterX, z: frontZ, w: sideSegmentWidth, d: 1 },
+                ];
 
-        // Fondo norte: dos segmentos a los lados del arco
-        { x: leftSegmentCenterX, z: backZ, w: sideSegmentWidth, d: 1 },
-        { x: rightSegmentCenterX, z: backZ, w: sideSegmentWidth, d: 1 },
+                walls.forEach(wall => {
+                    const shape = new CANNON.Box(new CANNON.Vec3(wall.w / 2, wallHeight / 2, wall.d / 2));
+                    const body = new CANNON.Body({
+                        mass: 0,
+                        material: wallMat,
+                        collisionFilterGroup: GROUP_WALL,
+                        collisionFilterMask: GROUP_PLAYER | GROUP_BALL
+                    });
+                    body.addShape(shape);
+                    body.position.set(wall.x, wallHeight / 2, wall.z);
+                    this.world.addBody(body);
 
-        // Fondo sur: dos segmentos a los lados del arco
-        { x: leftSegmentCenterX, z: frontZ, w: sideSegmentWidth, d: 1 },
-        { x: rightSegmentCenterX, z: frontZ, w: sideSegmentWidth, d: 1 },
-    ];
+                    const wallGeo = new THREE.BoxGeometry(wall.w, wallHeight, wall.d);
+                    const wallMesh = new THREE.Mesh(wallGeo, new THREE.MeshBasicMaterial({ visible: false }));
+                    wallMesh.position.copy(body.position);
+                    this.scene.add(wallMesh);
+                    this.collidableObjects.push(wallMesh);
+                });
 
-    // Crear paredes laterales y de fondo
-    walls.forEach(wall => {
-        const shape = new CANNON.Box(new CANNON.Vec3(wall.w / 2, wallHeight / 2, wall.d / 2));
-        const body = new CANNON.Body({
-            mass: 0,
-            material: wallMat,
-            collisionFilterGroup: GROUP_WALL,
-            collisionFilterMask: GROUP_PLAYER | GROUP_BALL
-        });
-        body.addShape(shape);
-        body.position.set(wall.x, wallHeight / 2, wall.z);
-        this.world.addBody(body);
+                const ceilingHeight = this.goalHeight;
+                const ceilingThickness = 0.5;
+                const fieldCenterLength = length - (this.goalDepth * 2);
+                const sideCeilingWidth = (width - goalWidth) / 2;
+                
+                const ceilings = [
+                    { x: 0, z: 0, w: width, d: fieldCenterLength },
+                    { x: -(width + goalWidth) / 4, z: length / 2, w: sideCeilingWidth, d: this.goalDepth },
+                    { x: (width + goalWidth) / 4, z: length / 2, w: sideCeilingWidth, d: this.goalDepth },
+                    { x: -(width + goalWidth) / 4, z: -length / 2, w: sideCeilingWidth, d: this.goalDepth },
+                    { x: (width + goalWidth) / 4, z: -length / 2, w: sideCeilingWidth, d: this.goalDepth }
+                ];
 
-        const wallGeo = new THREE.BoxGeometry(wall.w, wallHeight, wall.d);
-        const wallMesh = new THREE.Mesh(wallGeo, new THREE.MeshBasicMaterial({ visible: false }));
-        wallMesh.position.copy(body.position);
-        this.scene.add(wallMesh);
-        this.collidableObjects.push(wallMesh);
-    });
-
-    // --- TECHO INVISIBLE SOBRE TODO EL CAMPO (EXCEPTO ARCOS) ---
-    const ceilingHeight = goalHeight; // Altura del travesaño
-    const ceilingThickness = 0.5;
-    
-    // Calcular dimensiones de las secciones del techo
-    const fieldCenterLength = length - (this.goalDepth * 2); // Área central sin contar zonas de arcos
-    const sideCeilingWidth = (width - goalWidth) / 2;
-    
-    const ceilings = [
-        // Techo central (entre los dos arcos, ancho completo)
-        { x: 0, z: 0, w: width, d: fieldCenterLength },
-        
-        // Techos laterales sobre los arcos (norte)
-        { x: -(width + goalWidth) / 4, z: length / 2, w: sideCeilingWidth, d: this.goalDepth },
-        { x: (width + goalWidth) / 4, z: length / 2, w: sideCeilingWidth, d: this.goalDepth },
-        
-        // Techos laterales sobre los arcos (sur)
-        { x: -(width + goalWidth) / 4, z: -length / 2, w: sideCeilingWidth, d: this.goalDepth },
-        { x: (width + goalWidth) / 4, z: -length / 2, w: sideCeilingWidth, d: this.goalDepth }
-    ];
-
-    ceilings.forEach(ceiling => {
-        const shape = new CANNON.Box(new CANNON.Vec3(ceiling.w / 2, ceilingThickness / 2, ceiling.d / 2));
-        const body = new CANNON.Body({
-            mass: 0,
-            material: wallMat,
-            collisionFilterGroup: GROUP_WALL,
-            collisionFilterMask: GROUP_BALL // Solo la pelota choca con el techo
-        });
-        body.addShape(shape);
-        body.position.set(ceiling.x, ceilingHeight, ceiling.z);
-        this.world.addBody(body);
-    });
-}
+                ceilings.forEach(ceiling => {
+                    const shape = new CANNON.Box(new CANNON.Vec3(ceiling.w / 2, ceilingThickness / 2, ceiling.d / 2));
+                    const body = new CANNON.Body({
+                        mass: 0,
+                        material: wallMat,
+                        collisionFilterGroup: GROUP_WALL,
+                        collisionFilterMask: GROUP_BALL
+                    });
+                    body.addShape(shape);
+                    body.position.set(ceiling.x, ceilingHeight, ceiling.z);
+                    this.world.addBody(body);
+                });
+            }
            
             createGoals(fieldLength) {
                 const goalWidth = 12; const goalHeight = 4; const postRadius = 0.1;
-                const netDepth = this.goalDepth; // <-- Usa la variable del constructor
+                const netDepth = this.goalDepth;
                 const postMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.7, roughness: 0.3 });
-                const netMat = new CANNON.Material({ friction: 0.1, restitution: 0.1 }); // <-- Material para la red
+                const netMat = new CANNON.Material({ friction: 0.1, restitution: 0.1 });
                
                 const createOneGoal = (zPos, teamName) => {
-                    const postGeo = new THREE.CylinderGeometry(postRadius, postRadius, goalHeight, 16); // Reutilizar geometría
+                    const postGeo = new THREE.CylinderGeometry(postRadius, postRadius, goalHeight, 16);
                     const leftPost = new THREE.Mesh(postGeo, postMat);
                     leftPost.position.set(-goalWidth / 2, goalHeight / 2, zPos); leftPost.castShadow = true; this.scene.add(leftPost);
                     const rightPost = new THREE.Mesh(postGeo, postMat);
@@ -905,92 +1014,79 @@
                         isTrigger: true,
                         shape: goalLineShape,
                         collisionFilterGroup: GROUP_GOAL,
-                        collisionFilterMask: GROUP_BALL | GROUP_PLAYER // El trigger solo interactúa con la pelota
+                        collisionFilterMask: GROUP_BALL | GROUP_PLAYER
                     });
                     goalLineBody.position.set(0, goalHeight / 2, zPos);
                     this.world.addBody(goalLineBody);
                     if (teamName === 'north') this.goalTriggerNorth = goalLineBody; else this.goalTriggerSouth = goalLineBody;
-                const netThickness = 0.2;
-        // Calcula el offset Z para poner la red hacia atrás (respecto a la línea zPos)
-        const netZOffset = zPos > 0 ? netDepth / 2 : -netDepth / 2;
+                    
+                    const netThickness = 0.2;
+                    const netZOffset = zPos > 0 ? netDepth / 2 : -netDepth / 2;
 
-        // Fondo de la red
-        const backNetShape = new CANNON.Box(new CANNON.Vec3(goalWidth / 2, goalHeight / 2, netThickness / 2));
-        const backNetBody = new CANNON.Body({
-            mass: 0,
-            material: netMat,
-            collisionFilterGroup: GROUP_NET,
-            collisionFilterMask: GROUP_BALL | GROUP_PLAYER // La red solo choca con la pelota
-        });
-        backNetBody.addShape(backNetShape);
-        // Posición: Misma X/Y que línea de gol, Z movido hacia atrás por netDepth
-        backNetBody.position.set(0, goalHeight / 2, zPos + netZOffset);
-        this.world.addBody(backNetBody);
+                    const backNetShape = new CANNON.Box(new CANNON.Vec3(goalWidth / 2, goalHeight / 2, netThickness / 2));
+                    const backNetBody = new CANNON.Body({
+                        mass: 0,
+                        material: netMat,
+                        collisionFilterGroup: GROUP_NET,
+                        collisionFilterMask: GROUP_BALL | GROUP_PLAYER
+                    });
+                    backNetBody.addShape(backNetShape);
+                    backNetBody.position.set(0, goalHeight / 2, zPos + netZOffset);
+                    this.world.addBody(backNetBody);
 
-        // Lado izquierdo de la red
-        const sideNetShape = new CANNON.Box(new CANNON.Vec3(netThickness / 2, goalHeight / 2, netDepth / 2));
-        const leftNetBody = new CANNON.Body({ mass: 0, material: netMat, collisionFilterGroup: GROUP_NET, collisionFilterMask: GROUP_BALL | GROUP_PLAYER });
-        leftNetBody.addShape(sideNetShape);
-        // Posición: Misma Y que línea de gol, X en el poste izq, Z a mitad de camino
-        leftNetBody.position.set(-goalWidth / 2 - netThickness / 2, goalHeight / 2, zPos + netZOffset);
-        this.world.addBody(leftNetBody);
+                    const sideNetShape = new CANNON.Box(new CANNON.Vec3(netThickness / 2, goalHeight / 2, netDepth / 2));
+                    const leftNetBody = new CANNON.Body({ mass: 0, material: netMat, collisionFilterGroup: GROUP_NET, collisionFilterMask: GROUP_BALL | GROUP_PLAYER });
+                    leftNetBody.addShape(sideNetShape);
+                    leftNetBody.position.set(-goalWidth / 2 - netThickness / 2, goalHeight / 2, zPos + netZOffset);
+                    this.world.addBody(leftNetBody);
 
-        // Lado derecho de la red
-        const rightNetBody = new CANNON.Body({ mass: 0, material: netMat, collisionFilterGroup: GROUP_NET, collisionFilterMask: GROUP_BALL | GROUP_PLAYER });
-        rightNetBody.addShape(sideNetShape);
-        // Posición: Misma Y que línea de gol, X en el poste der, Z a mitad de camino
-        rightNetBody.position.set(goalWidth / 2 + netThickness / 2, goalHeight / 2, zPos + netZOffset);
-        this.world.addBody(rightNetBody);
+                    const rightNetBody = new CANNON.Body({ mass: 0, material: netMat, collisionFilterGroup: GROUP_NET, collisionFilterMask: GROUP_BALL | GROUP_PLAYER });
+                    rightNetBody.addShape(sideNetShape);
+                    rightNetBody.position.set(goalWidth / 2 + netThickness / 2, goalHeight / 2, zPos + netZOffset);
+                    this.world.addBody(rightNetBody);
 
-        // (Opcional) Visualizar redes (ya estaba en el código anterior, puedes mantenerlo o quitarlo)
-         const netMeshMat = new THREE.MeshBasicMaterial({ color: 0xaaaaaa, wireframe: true, transparent: true, opacity: 0.3 });
-         const backNetMesh = new THREE.Mesh(new THREE.BoxGeometry(goalWidth, goalHeight, netThickness), netMeshMat);
-         backNetMesh.position.copy(backNetBody.position); this.scene.add(backNetMesh);
-         const sideNetMeshGeo = new THREE.BoxGeometry(netThickness, goalHeight, netDepth);
-         const leftNetMesh = new THREE.Mesh(sideNetMeshGeo, netMeshMat); leftNetMesh.position.copy(leftNetBody.position); this.scene.add(leftNetMesh);
-         const rightNetMesh = new THREE.Mesh(sideNetMeshGeo, netMeshMat); rightNetMesh.position.copy(rightNetBody.position); this.scene.add(rightNetMesh);
-        // --- FIN REDES FÍSICAS ---
-    };
-    createOneGoal(fieldLength / 2, 'north'); createOneGoal(-fieldLength / 2, 'south');
-}
+                    const netMeshMat = new THREE.MeshBasicMaterial({ color: 0xaaaaaa, wireframe: true, transparent: true, opacity: 0.3 });
+                    const backNetMesh = new THREE.Mesh(new THREE.BoxGeometry(goalWidth, goalHeight, netThickness), netMeshMat);
+                    backNetMesh.position.copy(backNetBody.position); this.scene.add(backNetMesh);
+                    const sideNetMeshGeo = new THREE.BoxGeometry(netThickness, goalHeight, netDepth);
+                    const leftNetMesh = new THREE.Mesh(sideNetMeshGeo, netMeshMat); leftNetMesh.position.copy(leftNetBody.position); this.scene.add(leftNetMesh);
+                    const rightNetMesh = new THREE.Mesh(sideNetMeshGeo, netMeshMat); rightNetMesh.position.copy(rightNetBody.position); this.scene.add(rightNetMesh);
+                };
+                createOneGoal(fieldLength / 2, 'north'); createOneGoal(-fieldLength / 2, 'south');
+            }
 
-createFieldIdentifiers() {
-    const identifierHeight = 8;
-    const identifierWidth = 15;
-    const identifierDepth = 0.5;
-    
-    // Identificador AZUL (lado sur, z negativo)
-    const blueGeo = new THREE.BoxGeometry(identifierWidth, identifierHeight, identifierDepth);
-    const blueMat = new THREE.MeshStandardMaterial({ 
-        color: 0x3b82f6, 
-        emissive: 0x3b82f6, 
-        emissiveIntensity: 0.3,
-        metalness: 0.3,
-        roughness: 0.7
-    });
-    const blueIdentifier = new THREE.Mesh(blueGeo, blueMat);
-    blueIdentifier.position.set(0, identifierHeight / 2, -this.fieldLength / 2 - 1);
-    blueIdentifier.castShadow = true;
-    this.scene.add(blueIdentifier);
-    // Evitar que la cámara atraviese este identificador
-    this.collidableObjects.push(blueIdentifier);
-    
-    // Identificador ROJO (lado norte, z positivo)
-    const redMat = new THREE.MeshStandardMaterial({ 
-        color: 0xef4444, 
-        emissive: 0xef4444, 
-        emissiveIntensity: 0.3,
-        metalness: 0.3,
-        roughness: 0.7
-    });
-    const redIdentifier = new THREE.Mesh(blueGeo, redMat);
-    redIdentifier.position.set(0, identifierHeight / 2, this.fieldLength / 2 + 1);
-    redIdentifier.castShadow = true;
-    this.scene.add(redIdentifier);
-    // Evitar que la cámara atraviese este identificador
-    this.collidableObjects.push(redIdentifier);
-}
-
+            createFieldIdentifiers() {
+                const identifierHeight = 8;
+                const identifierWidth = 15;
+                const identifierDepth = 0.5;
+                
+                const blueGeo = new THREE.BoxGeometry(identifierWidth, identifierHeight, identifierDepth);
+                const blueMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x3b82f6, 
+                    emissive: 0x3b82f6, 
+                    emissiveIntensity: 0.3,
+                    metalness: 0.3,
+                    roughness: 0.7
+                });
+                const blueIdentifier = new THREE.Mesh(blueGeo, blueMat);
+                blueIdentifier.position.set(0, identifierHeight / 2, -this.fieldLength / 2 - 1);
+                blueIdentifier.castShadow = true;
+                this.scene.add(blueIdentifier);
+                this.collidableObjects.push(blueIdentifier);
+                
+                const redMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xef4444, 
+                    emissive: 0xef4444, 
+                    emissiveIntensity: 0.3,
+                    metalness: 0.3,
+                    roughness: 0.7
+                });
+                const redIdentifier = new THREE.Mesh(blueGeo, redMat);
+                redIdentifier.position.set(0, identifierHeight / 2, this.fieldLength / 2 + 1);
+                redIdentifier.castShadow = true;
+                this.scene.add(redIdentifier);
+                this.collidableObjects.push(redIdentifier);
+            }
 
             createBall() {
                 const ballGeo = new THREE.SphereGeometry(this.ballRadius, 32, 32);
@@ -1004,42 +1100,46 @@ createFieldIdentifiers() {
                 this.ballBody = new CANNON.Body({
                     mass: 0.43,
                     shape: ballShape,
-                    linearDamping: 0.6,  // Reducido de 0.4 para menor resistencia al aire
-                    angularDamping: 0.2, // Reducido para permitir más rotación
+                    linearDamping: 0.6,
+                    angularDamping: 0.2,
                     material: new CANNON.Material({
-                        friction: 0.2,    // Reducido para deslizamiento más suave
-                        restitution: 0.8  // Aumentado para más rebote
+                        friction: 0.2,
+                        restitution: 0.8
                     }),
                     collisionFilterGroup: GROUP_BALL,
                     collisionFilterMask: GROUP_EVERYTHING
                 });
-                this.ballBody.position.set(0, this.ballRadius + 0.1, 0); // Un poco más arriba para evitar problemas iniciales
+                this.ballBody.position.set(0, this.ballRadius + 0.1, 0);
                 this.world.addBody(this.ballBody);
-               
-               
             }
 
-            // --- NUEVA FUNCIÓN PARA CENTRALIZAR LÓGICA DE GOL ---
             scoreGoal(scoringTeam) {
-    if (this.goalScoredRecently) return;
-    this.goalScoredRecently = true;
+                if (this.goalScoredRecently) return;
+                this.goalScoredRecently = true;
 
-    const message = scoringTeam === 'blue' ? "¡Gol del equipo Azul!" : "¡Gol del equipo Rojo!";
-    this.showKickIndicator(message);
+                const message = scoringTeam === 'blue' ? "¡Gol del equipo Azul!" : "¡Gol del equipo Rojo!";
+                this.showKickIndicator(message);
 
-    if (scoringTeam === 'blue') {
-        this.score.blue++;
-        this.lastTeamToScore = 'blue';
-        this.currentKickoffTeam = 'red'; // CAMBIADO: El otro equipo saca
-    } else {
-        this.score.red++;
-        this.lastTeamToScore = 'red';
-        this.currentKickoffTeam = 'blue'; // CAMBIADO: El otro equipo saca
-    }
+                if (this.isBallAuthority) {
+                    socket.emit('goalScored', {
+                        room: currentRoomCode,
+                        team: scoringTeam
+                    });
+                }
 
-    this.updateScore();
-    this.resetBall();
-}
+                if (scoringTeam === 'blue') {
+                    this.score.blue++;
+                    this.lastTeamToScore = 'blue';
+                    this.currentKickoffTeam = 'red';
+                } else {
+                    this.score.red++;
+                    this.lastTeamToScore = 'red';
+                    this.currentKickoffTeam = 'blue';
+                }
+
+                this.updateScore();
+                this.resetBall();
+            }
            
             createPlayer() {
                 const radius = 0.5; const height = 1.8;
@@ -1064,217 +1164,182 @@ createFieldIdentifiers() {
                 this.world.addBody(this.playerBody);
             }
 
-
-setPlayerStartPosition(team, position) {
-    const positions = {
-        blue: {
-            'gk': { x: 0, z: -40 },
-            'def-left': { x: -8, z: -25 },
-            'def-right': { x: 8, z: -25 },
-            'fwd-left': { x: -8, z: -10 },
-            'fwd-right': { x: 8, z: -10 }
-        },
-        red: {
-            'gk': { x: 0, z: 40 },
-            'def-left': { x: -8, z: 25 },
-            'def-right': { x: 8, z: 25 },
-            'fwd-left': { x: -8, z: 10 },
-            'fwd-right': { x: 8, z: 10 }
-        }
-    };
-    
-    const pos = positions[team][position];
-    
-    // RESETEAR VELOCIDAD DEL JUGADOR
-    this.playerBody.velocity.set(0, 0, 0);
-    this.playerBody.angularVelocity.set(0, 0, 0);
-    
-    // Establecer posición
-    this.playerBody.position.set(pos.x, 0.5 + 0.1, pos.z);
-    
-    // Actualiza el color del jugador
-    const playerColor = team === 'blue' ? 0x3b82f6 : 0xef4444;
-    this.playerMesh.material.color.setHex(playerColor);
-    
-    // RESETEAR ORIENTACIÓN DE LA CÁMARA
-    this.cameraOrbit.yaw = team === 'blue' ? 0 : Math.PI;
-    this.cameraOrbit.pitch = 0.3; // <-- AÑADIR: Resetear el pitch también
-    
-    // FORZAR ACTUALIZACIÓN DE LA CÁMARA INMEDIATAMENTE
-    this.updateCamera();
-}
-            // --- FUNCIÓN PARA CAMBIAR COLISIÓN DEL JUGADOR DURANTE SAQUE ---
-            setPlayerKickoffCollision(isKickoff) {
-    if (isKickoff) {
-        // Durante saque, NO colisiona con la pelota ni el trigger de gol
-        this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_NET; // <-- AÑADIR GROUP_NET
-    } else {
-        // Juego normal, colisiona con todo excepto triggers de gol
-        this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_BALL | GROUP_NET; // <-- AÑADIR GROUP_NET
-    }
-}
-           
-setupControls() {
-    const teamSelectScreen = document.getElementById('team-select-screen');
-    const pauseMenu = document.getElementById('pause-menu');
-    const resumeBtn = document.getElementById('resume-btn');
-    const changePositionBtn = document.getElementById('change-position-btn');
-    const positionBtns = document.querySelectorAll('.position-btn');
-    
-    // Selección de posición inicial
-    positionBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const team = btn.dataset.team;
-        const position = btn.dataset.position;
-        
-        this.playerTeam = team;
-        this.hasSelectedPosition = true;
-        this.setPlayerStartPosition(team, position);
-        
-        socket.emit('playerReady', { 
-                        room: currentRoomCode, 
-                        team: this.playerTeam, 
-                        position: btn.dataset.position 
-                    });
-
-        teamSelectScreen.style.display = 'none';
-
-        // SOLO solicitar pointer lock si NO está activo
-        if (document.pointerLockElement !== this.renderer.domElement) {
-            // Esperar un pequeño tiempo para evitar conflicto con el menú
-            setTimeout(() => {
-                this.renderer.domElement.requestPointerLock();
-            }, 50);
-        }
-    });
-});
-    
-    // Botón de continuar - simplemente intenta volver al pointer lock
-    resumeBtn.addEventListener('click', () => {
-        if (this.renderer && this.renderer.domElement) {
-            this.renderer.domElement.requestPointerLock();
-        } else {
-            document.body.requestPointerLock();
-        }
-    });
-    
-    // Botón de cambiar posición
-    changePositionBtn.addEventListener('click', () => {
-        // Mostrar la selección de equipo; ocultar el badge del código de sala
-        pauseMenu.style.display = 'none';
-        teamSelectScreen.style.display = 'block';
-        if (roomCodeBadge) roomCodeBadge.style.display = 'none';
-        // NO solicitar pointer lock aquí
-    });
-    
-    // Botón "Volver" dentro de la pantalla de selección para regresar al menú de pausa
-    if (backFromChangeBtn) {
-        backFromChangeBtn.addEventListener('click', () => {
-            teamSelectScreen.style.display = 'none';
-            pauseMenu.style.display = 'block';
-            // Actualizar y mostrar el badge con el código de sala (si existe)
-            const codeText = currentRoomCode ? `SALA: ${currentRoomCode}` : 'SALA: ----';
-            const pauseCodeElem = document.getElementById('pause-room-code');
-            if (pauseCodeElem) pauseCodeElem.textContent = codeText;
-            if (roomCodeBadge) {
-                roomCodeBadge.textContent = codeText;
-                roomCodeBadge.style.display = 'block';
+            setPlayerStartPosition(team, position) {
+                const positions = {
+                    blue: {
+                        'gk': { x: 0, z: -40 },
+                        'def-left': { x: -8, z: -25 },
+                        'def-right': { x: 8, z: -25 },
+                        'fwd-left': { x: -8, z: -10 },
+                        'fwd-right': { x: 8, z: -10 }
+                    },
+                    red: {
+                        'gk': { x: 0, z: 40 },
+                        'def-left': { x: -8, z: 25 },
+                        'def-right': { x: 8, z: 25 },
+                        'fwd-left': { x: -8, z: 10 },
+                        'fwd-right': { x: 8, z: 10 }
+                    }
+                };
+                
+                const pos = positions[team][position];
+                
+                this.playerBody.velocity.set(0, 0, 0);
+                this.playerBody.angularVelocity.set(0, 0, 0);
+                this.playerBody.position.set(pos.x, 0.5 + 0.1, pos.z);
+                
+                const playerColor = team === 'blue' ? 0x3b82f6 : 0xef4444;
+                this.playerMesh.material.color.setHex(playerColor);
+                
+                this.cameraOrbit.yaw = team === 'blue' ? 0 : Math.PI;
+                this.cameraOrbit.pitch = 0.3;
+                
+                this.updateCamera();
             }
-        });
-    }
-    
-    // Evento cuando cambia el estado del pointer lock
-    document.addEventListener('pointerlockchange', () => {
-        const locked = document.pointerLockElement === document.body || 
-                       document.pointerLockElement === this.renderer.domElement;
-        
-        // IMPORTANTE: gameStarted controla si el jugador puede interactuar,
-        // pero NO pausa el juego
-        this.gameStarted = locked;
-        
-       if (!locked && !this.hasSelectedPosition) {
-                    // Si pierde el lock y AÚN no eligió equipo,
-                    // mostrar selección de equipo (ya pasó el lobby)
-                    teamSelectScreen.style.display = 'block';
-                    pauseMenu.style.display = 'none';
-                    this.hud.style.display = 'none';
-                    if (roomCodeBadge) roomCodeBadge.style.display = 'none';
-                } else if (!locked && this.hasSelectedPosition) {
-                    // Ya seleccionó, mostrar menú pausa
-                    teamSelectScreen.style.display = 'none';
-                    pauseMenu.style.display = 'block';
-                    this.hud.style.display = 'block';
-                    // Actualizar el código de sala en el menú y mostrar el badge arriba-izquierda
-                    const codeText = currentRoomCode ? `SALA: ${currentRoomCode}` : 'SALA: ----';
-                    const pauseCodeElem = document.getElementById('pause-room-code');
-                    if (pauseCodeElem) pauseCodeElem.textContent = codeText;
-                    if (roomCodeBadge) { roomCodeBadge.textContent = codeText; roomCodeBadge.style.display = 'block'; }
+
+            setPlayerKickoffCollision(isKickoff) {
+                if (isKickoff) {
+                    this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_NET;
                 } else {
-                    // Jugando
-                    teamSelectScreen.style.display = 'none';
-                    pauseMenu.style.display = 'none';
-                    this.hud.style.display = 'block';
-                    if (roomCodeBadge) roomCodeBadge.style.display = 'none';
+                    this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_BALL | GROUP_NET;
                 }
-            
-    });
-    
-    document.addEventListener('keydown', (e) => {
-        this.keys[e.key.toLowerCase()] = true;
-        
-        if (e.code === 'Space' && (this.isOnGround || this.playerBody.position.y <= 1.05)) {
-            this.playerBody.velocity.y = 10; 
-            this.isOnGround = false;
-        }
-    });
-    
-    document.addEventListener('keyup', (e) => { 
-        this.keys[e.key.toLowerCase()] = false; 
-    });
-    
-    document.addEventListener('mousemove', (e) => {
-        if (!this.gameStarted) return;
-        const sensitivity = 0.002;
-        this.cameraOrbit.yaw -= e.movementX * sensitivity;
-        this.cameraOrbit.pitch -= e.movementY * sensitivity;
-        const halfPI = Math.PI / 2;
-        this.cameraOrbit.pitch = Math.max(-halfPI + 0.01, Math.min(halfPI - 0.01, this.cameraOrbit.pitch));
-        if (this.isCharging) { 
-            this.swerveAccumX += e.movementX; 
-            this.swerveAccumY += e.movementY; 
-        }
-    });
-    
-    document.addEventListener('mousedown', (e) => {
-        if (!this.gameStarted) return;
-        e.preventDefault();
-        if (this.isBallInKickArea()) {
-            this.isCharging = true; 
-            this.chargeTime = 0; 
-            this.kickButton = e.button;
-            this.swerveAccumX = 0; 
-            this.swerveAccumY = 0; 
-            this.powerMeter.style.display = 'block';
-        }
-    });
-    
-    document.addEventListener('mouseup', (e) => {
-        if (!this.gameStarted || !this.isCharging || e.button !== this.kickButton) return;
-        e.preventDefault(); 
-        this.executeKick();
-    });
-    
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
-}
+            }
+           
+            setupControls() {
+                const positionBtns = document.querySelectorAll('.position-btn');
+                const resumeBtn = document.getElementById('resume-btn');
+                const changePositionBtn = document.getElementById('change-position-btn');
+                
+                positionBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const team = btn.dataset.team;
+                        const position = btn.dataset.position;
+                        
+                        this.playerTeam = team;
+                        this.hasSelectedPosition = true;
+                        this.setPlayerStartPosition(team, position);
+                        
+                        socket.emit('playerReady', { 
+                            room: currentRoomCode, 
+                            team: this.playerTeam, 
+                            position: btn.dataset.position,
+                            nickname: playerNickname
+                        });
 
+                        teamSelectScreen.style.display = 'none';
 
+                        if (document.pointerLockElement !== this.renderer.domElement) {
+                            setTimeout(() => {
+                                this.renderer.domElement.requestPointerLock();
+                            }, 50);
+                        }
+                    });
+                });
+                
+                resumeBtn.addEventListener('click', () => {
+                    if (this.renderer && this.renderer.domElement) {
+                        this.renderer.domElement.requestPointerLock();
+                    } else {
+                        document.body.requestPointerLock();
+                    }
+                });
+                
+                changePositionBtn.addEventListener('click', () => {
+                    pauseMenu.style.display = 'none';
+                    teamSelectScreen.style.display = 'block';
+                    if (roomCodeBadge) roomCodeBadge.style.display = 'none';
+                });
+                
+                if (backFromChangeBtn) {
+                    backFromChangeBtn.addEventListener('click', () => {
+                        teamSelectScreen.style.display = 'none';
+                        pauseMenu.style.display = 'block';
+                        const codeText = currentRoomCode ? `SALA: ${currentRoomCode}` : 'SALA: ----';
+                        const pauseCodeElem = document.getElementById('pause-room-code');
+                        if (pauseCodeElem) pauseCodeElem.textContent = codeText;
+                        if (roomCodeBadge) {
+                            roomCodeBadge.textContent = codeText;
+                            roomCodeBadge.style.display = 'block';
+                        }
+                    });
+                }
+                
+                document.addEventListener('pointerlockchange', () => {
+                    const locked = document.pointerLockElement === document.body || 
+                                   document.pointerLockElement === this.renderer.domElement;
+                    
+                    this.gameStarted = locked;
+                    
+                    if (!locked && !this.hasSelectedPosition) {
+                        teamSelectScreen.style.display = 'block';
+                        pauseMenu.style.display = 'none';
+                        this.hud.style.display = 'none';
+                        if (roomCodeBadge) roomCodeBadge.style.display = 'none';
+                    } else if (!locked && this.hasSelectedPosition) {
+                        teamSelectScreen.style.display = 'none';
+                        pauseMenu.style.display = 'block';
+                        this.hud.style.display = 'block';
+                        const codeText = currentRoomCode ? `SALA: ${currentRoomCode}` : 'SALA: ----';
+                        const pauseCodeElem = document.getElementById('pause-room-code');
+                        if (pauseCodeElem) pauseCodeElem.textContent = codeText;
+                        if (roomCodeBadge) { roomCodeBadge.textContent = codeText; roomCodeBadge.style.display = 'block'; }
+                    } else {
+                        teamSelectScreen.style.display = 'none';
+                        pauseMenu.style.display = 'none';
+                        this.hud.style.display = 'block';
+                        if (roomCodeBadge) roomCodeBadge.style.display = 'none';
+                    }
+                });
+                
+                document.addEventListener('keydown', (e) => {
+                    this.keys[e.key.toLowerCase()] = true;
+                    
+                    if (e.code === 'Space' && (this.isOnGround || this.playerBody.position.y <= 1.05)) {
+                        this.playerBody.velocity.y = 10; 
+                        this.isOnGround = false;
+                    }
+                });
+                
+                document.addEventListener('keyup', (e) => { 
+                    this.keys[e.key.toLowerCase()] = false; 
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (!this.gameStarted) return;
+                    const sensitivity = 0.002;
+                    this.cameraOrbit.yaw -= e.movementX * sensitivity;
+                    this.cameraOrbit.pitch -= e.movementY * sensitivity;
+                    const halfPI = Math.PI / 2;
+                    this.cameraOrbit.pitch = Math.max(-halfPI + 0.01, Math.min(halfPI - 0.01, this.cameraOrbit.pitch));
+                    if (this.isCharging) { 
+                        this.swerveAccumX += e.movementX; 
+                        this.swerveAccumY += e.movementY; 
+                    }
+                });
+                
+                document.addEventListener('mousedown', (e) => {
+                    if (!this.gameStarted) return;
+                    e.preventDefault();
+                    if (this.isBallInKickArea()) {
+                        this.isCharging = true; 
+                        this.chargeTime = 0; 
+                        this.kickButton = e.button;
+                        this.swerveAccumX = 0; 
+                        this.swerveAccumY = 0; 
+                        this.powerMeter.style.display = 'block';
+                    }
+                });
+                
+                document.addEventListener('mouseup', (e) => {
+                    if (!this.gameStarted || !this.isCharging || e.button !== this.kickButton) return;
+                    e.preventDefault(); 
+                    this.executeKick();
+                });
+                
+                document.addEventListener('contextmenu', (e) => e.preventDefault());
+            }
 
-
-
-
-
-
-executeKick() {
+            executeKick() {
                 if (!this.isBallInKickArea()) {
                     this.isCharging = false;
                     this.powerMeter.style.display = 'none';
@@ -1286,6 +1351,7 @@ executeKick() {
                     if (playerTeam === this.currentKickoffTeam) {
                         this.kickoffActive = false;
                         this.setPlayerKickoffCollision(false);
+                        socket.emit('kickoffTaken', { room: currentRoomCode });
                     } else {
                         this.isCharging = false;
                         this.powerMeter.style.display = 'none';
@@ -1293,17 +1359,14 @@ executeKick() {
                     }
                 }
                
-                // Nuevo sistema de potencia con mejor curva
                 const chargeRatio = Math.min(this.chargeTime / this.maxChargeTime, 1);
-                const powerCurve = Math.pow(chargeRatio, 1.7); // Curva más suave
+                const powerCurve = Math.pow(chargeRatio, 1.7);
                 const isPass = this.kickButton === 2;
                
-                // Valores ajustados para mejor control
                 const BASE_POWER = 15;
                 const MAX_POWER_BOOST = 20;
                 const power = BASE_POWER + (MAX_POWER_BOOST * powerCurve);
                
-                // Dirección base del tiro
                 const kickDir = new THREE.Vector3(
                     -Math.sin(this.cameraOrbit.yaw),
                     -Math.tan(this.cameraOrbit.pitch) * 0.1,
@@ -1311,47 +1374,37 @@ executeKick() {
                 );
                
                 if (isPass) {
-                    kickDir.y = 0.1; // Pase raso con ligera elevación
+                    kickDir.y = 0.1;
                     kickDir.normalize().multiplyScalar(power * 0.4);
                 } else {
-                    // Normalizar y aplicar potencia
                     kickDir.normalize().multiplyScalar(power);
                    
-                    // Sistema de efecto mejorado
                     if (Math.abs(this.swerveAccumX) > 5 || Math.abs(this.swerveAccumY) > 5) {
                         const MAX_SWERVE = 300;
                         const SWERVE_POWER = 0.015;
                         const LIFT_POWER = 0.076;
 
-                       
-                        // Limitar acumulación de efecto
                         const swerveX = Math.sign(this.swerveAccumX) *
                           Math.min(Math.abs(this.swerveAccumX), MAX_SWERVE);
                         const swerveY = Math.sign(this.swerveAccumY) *
                           Math.min(Math.abs(this.swerveAccumY), MAX_SWERVE);
                        
-                        // Vector lateral (efecto horizontal)
                         const right = new THREE.Vector3(-kickDir.z, 0, kickDir.x).normalize();
                         const sideForce = right.multiplyScalar(swerveX * SWERVE_POWER * powerCurve);
                        
-                        // Vector vertical (efecto de elevación)
                         const liftForce = new THREE.Vector3(0, 1, 0)
                             .multiplyScalar(-swerveY * LIFT_POWER * powerCurve);
                        
-                        // Aplicar fuerzas de efecto
                         kickDir.add(sideForce).add(liftForce);
                     }
                 }
                
-                // Resetear velocidades previas
                 this.ballBody.velocity.setZero();
                 this.ballBody.angularVelocity.setZero();
                
-                // Aplicar impulso
                 const impulse = new CANNON.Vec3(kickDir.x, kickDir.y, kickDir.z);
                 this.ballBody.applyImpulse(impulse);
                
-                // Aplicar rotación basada en el efecto
                 if (!isPass && (Math.abs(this.swerveAccumX) > 5 || Math.abs(this.swerveAccumY) > 5)) {
                     const spinForce = new CANNON.Vec3(
                         this.swerveAccumY * 0.1,
@@ -1365,11 +1418,10 @@ executeKick() {
                 this.powerMeter.style.display = 'none';
             }
 
-            // --- ÁREA DE PATADA CON ÁNGULO MÁS ANCHO ---
             isBallInKickArea() {
                 const MAX_KICK_DISTANCE = 3;
-                const KICK_CONE_ANGLE_RAD = Math.PI / 3; // 60° a cada lado
-                const MIN_KICK_DOT = Math.cos(KICK_CONE_ANGLE_RAD); // Coseno de 60° = 0.5
+                const KICK_CONE_ANGLE_RAD = Math.PI / 3;
+                const MIN_KICK_DOT = Math.cos(KICK_CONE_ANGLE_RAD);
 
                 const playerPos2D = new THREE.Vector2(this.playerBody.position.x, this.playerBody.position.z);
                 const ballPos2D = new THREE.Vector2(this.ballBody.position.x, this.ballBody.position.z);
@@ -1396,20 +1448,18 @@ executeKick() {
                 const isSprinting = this.keys['shift'] && this.stamina > 0 && this.canSprint;
                 const speed = isSprinting ? this.sprintSpeed : this.playerSpeed;
                
-                // --- LÓGICA DE STAMINA REINTEGRADA ---
                 if (isSprinting && (this.keys['w'] || this.keys['a'] || this.keys['s'] || this.keys['d'])) {
-                this.stamina = Math.max(0, this.stamina - this.staminaDrain * dt);
-                if (this.stamina === 0) {
-                    this.canSprint = false; // AÑADIR ESTA LÍNEA
+                    this.stamina = Math.max(0, this.stamina - this.staminaDrain * dt);
+                    if (this.stamina === 0) {
+                        this.canSprint = false;
+                    }
+                } else if (this.stamina < this.maxStamina) {
+                    this.stamina = Math.min(this.maxStamina, this.stamina + this.staminaRegen * dt);
+                    if (this.stamina >= this.maxStamina * 0.6) {
+                        this.canSprint = true;
+                    }
                 }
-            } else if (this.stamina < this.maxStamina) {
-                this.stamina = Math.min(this.maxStamina, this.stamina + this.staminaRegen * dt);
-                if (this.stamina >= this.maxStamina * 0.6) { // AÑADIR ESTAS LÍNEAS
-                    this.canSprint = true;
-                }
-            }
-            this.staminaFill.style.width = (this.stamina / this.maxStamina * 100) + '%';
-                // --- FIN LÓGICA STAMINA ---
+                this.staminaFill.style.width = (this.stamina / this.maxStamina * 100) + '%';
                
                 const moveDir = new THREE.Vector3();
                 if (this.keys['w']) moveDir.z += 1; if (this.keys['s']) moveDir.z -= 1;
@@ -1425,25 +1475,23 @@ executeKick() {
 
                     let allowedToMove = true;
                     if (this.kickoffActive) {
-    const playerNewPosX = this.playerBody.position.x + desiredVelocityX * dt;
-    const playerNewPosZ = this.playerBody.position.z + desiredVelocityZ * dt;
-    const playerTeam = this.playerTeam;
-    const willBeInCircle = (playerNewPosX*playerNewPosX + playerNewPosZ*playerNewPosZ) <= (this.centerCircleRadius * this.centerCircleRadius);
-    
-    if (playerTeam === this.currentKickoffTeam) {
-        // El equipo que saca puede estar en su mitad o en el círculo central
-        const willBeInOwnHalf = (playerTeam === 'blue' && playerNewPosZ < 0) || (playerTeam === 'red' && playerNewPosZ > 0);
-        if (!willBeInOwnHalf && !willBeInCircle) {
-            allowedToMove = false;
-        }
-    } else {
-        // El equipo que NO saca debe estar en su mitad pero NO en el círculo
-        const willBeInOwnHalf = (playerTeam === 'blue' && playerNewPosZ < 0) || (playerTeam === 'red' && playerNewPosZ > 0);
-        if (!willBeInOwnHalf || willBeInCircle) {
-            allowedToMove = false;
-        }
-    }
-}
+                        const playerNewPosX = this.playerBody.position.x + desiredVelocityX * dt;
+                        const playerNewPosZ = this.playerBody.position.z + desiredVelocityZ * dt;
+                        const playerTeam = this.playerTeam;
+                        const willBeInCircle = (playerNewPosX*playerNewPosX + playerNewPosZ*playerNewPosZ) <= (this.centerCircleRadius * this.centerCircleRadius);
+                        
+                        if (playerTeam === this.currentKickoffTeam) {
+                            const willBeInOwnHalf = (playerTeam === 'blue' && playerNewPosZ < 0) || (playerTeam === 'red' && playerNewPosZ > 0);
+                            if (!willBeInOwnHalf && !willBeInCircle) {
+                                allowedToMove = false;
+                            }
+                        } else {
+                            const willBeInOwnHalf = (playerTeam === 'blue' && playerNewPosZ < 0) || (playerTeam === 'red' && playerNewPosZ > 0);
+                            if (!willBeInOwnHalf || willBeInCircle) {
+                                allowedToMove = false;
+                            }
+                        }
+                    }
 
                     if (allowedToMove) {
                         this.playerBody.velocity.x = desiredVelocityX; this.playerBody.velocity.z = desiredVelocityZ;
@@ -1482,8 +1530,7 @@ executeKick() {
                     newDistance = Math.max(minCamDistance, intersections[0].distance - collisionMargin);
                 }
                 const newPosition = rayStart.clone().add(rayDirection.multiplyScalar(newDistance));
-                // Evitar que la cámara atraviese el suelo plano (y mínima)
-                const groundY = 0; // suelo plano en y=0
+                const groundY = 0;
                 const minCamHeight = groundY + 0.3;
                 if (newPosition.y < minCamHeight) newPosition.y = minCamHeight;
                 this.camera.position.copy(newPosition);
@@ -1499,41 +1546,31 @@ executeKick() {
             }
            
             resetBall() {
-    setTimeout(() => {
-        this.goalScoredRecently = true;
+                setTimeout(() => {
+                    this.goalScoredRecently = true;
+                    this.kickoffActive = true;
+                    
+                    this.showKickIndicator(`¡Saque ${this.currentKickoffTeam === 'blue' ? 'Azul' : 'Rojo'}!`);
 
-        this.kickoffActive = true;
-        
-        this.showKickIndicator(`¡Saque ${this.currentKickoffTeam === 'blue' ? 'Azul' : 'Rojo'}!`);
+                    this.setPlayerKickoffCollision(true);
 
-        this.setPlayerKickoffCollision(true);
+                    this.ballBody.position.set(0, this.ballRadius + 0.1, 0);
+                    this.ballBody.velocity.set(0, 0, 0);
+                    this.ballBody.angularVelocity.set(0, 0, 0);
 
-        // Resetear pelota
-        this.ballBody.position.set(0, this.ballRadius + 0.1, 0);
-        this.ballBody.velocity.set(0, 0, 0);
-        this.ballBody.angularVelocity.set(0, 0, 0);
+                    const resetZ = this.playerTeam === 'blue' ? -20 : 20;
+                    this.playerBody.position.set(0, 0.5 + 0.1, resetZ);
+                    this.playerBody.velocity.set(0, 0, 0);
+                    this.playerBody.angularVelocity.set(0, 0, 0);
 
-        // Resetear jugador a su posición según su equipo
-        // NO ponerlo en una posición fija
-        const resetZ = this.playerTeam === 'blue' ? -20 : 20;
-        this.playerBody.position.set(0, 0.5 + 0.1, resetZ);
-        this.playerBody.velocity.set(0, 0, 0);
-        this.playerBody.angularVelocity.set(0, 0, 0);
-
-        // Reactivar detección de goles
-        this.goalScoredRecently = false;
-
-    }, 3000);
-}
-
-
-
-
+                    this.goalScoredRecently = false;
+                }, 3000);
+            }
 
             updateScore() {
                 this.scoreDisplay.innerHTML = `
                     <span class="team-blue">${this.score.blue}</span> -
-                    <span class="team-red">${this.score.red}</span>`; // Corregido: class="team-..."
+                    <span class="team-red">${this.score.red}</span>`;
             }
            
             onResize() {
@@ -1543,65 +1580,120 @@ executeKick() {
             }
            
             animate() {
-    requestAnimationFrame(() => this.animate());
-    const dt = Math.min(this.clock.getDelta(), 0.1);
-    
-    if (this.playerBody) {
-        const extraAccel = this.playerGravity - this.world.gravity.y;
-        const extraForce = new CANNON.Vec3(0, this.playerBody.mass * extraAccel, 0);
-        this.playerBody.applyForce(extraForce, this.playerBody.position);
-    }
+                requestAnimationFrame(() => this.animate());
+                const dt = Math.min(this.clock.getDelta(), 0.1);
+                
+                if (this.playerBody) {
+                    const extraAccel = this.playerGravity - this.world.gravity.y;
+                    const extraForce = new CANNON.Vec3(0, this.playerBody.mass * extraAccel, 0);
+                    this.playerBody.applyForce(extraForce, this.playerBody.position);
+                }
 
-    // SIEMPRE actualizar física, sin importar si gameStarted es true o false
-    this.world.step(1/60, dt, 10);
-    
-    // Solo permitir input del jugador si gameStarted es true
-    if (this.gameStarted) {
-        this.updatePlayer(dt);
-        this.updateCamera();
-    } else {
-        // Aún así actualizar la cámara para que se vea el juego
-        this.updateCamera();
-    }
-    
-    this.syncPhysicsToVisuals();
+                this.world.step(1/60, dt, 10);
+                
+                if (this.gameStarted) {
+                    this.updatePlayer(dt);
+                    this.updateCamera();
+                    
+                    const now = Date.now();
+                    if (now - this.lastPlayerUpdate > 50) {
+                        this.lastPlayerUpdate = now;
+                        socket.emit('playerMove', {
+                            room: currentRoomCode,
+                            position: {
+                                x: this.playerBody.position.x,
+                                y: this.playerBody.position.y,
+                                z: this.playerBody.position.z
+                            },
+                            rotation: this.cameraOrbit.yaw,
+                            velocity: {
+                                x: this.playerBody.velocity.x,
+                                y: this.playerBody.velocity.y,
+                                z: this.playerBody.velocity.z
+                            }
+                        });
+                    }
 
-    // Detección de goles siempre activa
-    if (!this.goalScoredRecently) {
-    const goalDepth = this.goalDepth;
-    const goalWidth = 12;
-    const halfFieldLength = this.fieldLength / 2;
-    const halfGoalWidth = goalWidth / 2;
+                    if (this.isBallAuthority && now - this.lastBallUpdate > 100) {
+                        this.lastBallUpdate = now;
+                        socket.emit('ballUpdate', {
+                            room: currentRoomCode,
+                            position: {
+                                x: this.ballBody.position.x,
+                                y: this.ballBody.position.y,
+                                z: this.ballBody.position.z
+                            },
+                            velocity: {
+                                x: this.ballBody.velocity.x,
+                                y: this.ballBody.velocity.y,
+                                z: this.ballBody.velocity.z
+                            },
+                            angularVelocity: {
+                                x: this.ballBody.angularVelocity.x,
+                                y: this.ballBody.angularVelocity.y,
+                                z: this.ballBody.angularVelocity.z
+                            }
+                        });
+                    }
+                } else {
+                    this.updateCamera();
+                }
+                
+                for (const playerId in this.otherPlayers) {
+                    const player = this.otherPlayers[playerId];
+                    if (player.targetPosition) {
+                        player.mesh.position.lerp(player.targetPosition, 0.2);
+                        player.mesh.rotation.y = player.targetRotation;
+                    }
+                    
+                    const screenPos = player.mesh.position.clone();
+                    screenPos.y += 1.5;
+                    screenPos.project(this.camera);
+                    
+                    const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+                    const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+                    
+                    if (screenPos.z < 1) {
+                        player.label.style.left = x + 'px';
+                        player.label.style.top = y + 'px';
+                        player.label.style.display = 'block';
+                    } else {
+                        player.label.style.display = 'none';
+                    }
+                }
+                
+                this.syncPhysicsToVisuals();
 
-    const bx = this.ballBody.position.x;
-    const by = this.ballBody.position.y;
-    const bz = this.ballBody.position.z;
-    const r  = this.ballRadius;
+                if (!this.goalScoredRecently && this.isBallAuthority) {
+                    const goalDepth = this.goalDepth;
+                    const goalWidth = 12;
+                    const halfFieldLength = this.fieldLength / 2;
+                    const halfGoalWidth = goalWidth / 2;
 
-    // Norte (arco en z positivo) = Arco del equipo ROJO
-    // Si metes gol aquí, gana el equipo AZUL
-    if (
-        (bz - r) > halfFieldLength &&
-        Math.abs(bx) + r < halfGoalWidth &&
-        (by - r) < (this.goalHeight || 4)
-    ) {
-        this.scoreGoal('blue'); // CAMBIADO: de 'red' a 'blue'
-    }
+                    const bx = this.ballBody.position.x;
+                    const by = this.ballBody.position.y;
+                    const bz = this.ballBody.position.z;
+                    const r  = this.ballRadius;
 
-    // Sur (arco en z negativo) = Arco del equipo AZUL
-    // Si metes gol aquí, gana el equipo ROJO
-    if (
-        (bz + r) < -halfFieldLength &&
-        Math.abs(bx) + r < halfGoalWidth &&
-        (by - r) < (this.goalHeight || 4)
-    ) {
-        this.scoreGoal('red'); // CAMBIADO: de 'blue' a 'red'
-    }
+                    if (
+                        (bz - r) > halfFieldLength &&
+                        Math.abs(bx) + r < halfGoalWidth &&
+                        (by - r) < (this.goalHeight || 4)
+                    ) {
+                        this.scoreGoal('blue');
+                    }
 
-    }
+                    if (
+                        (bz + r) < -halfFieldLength &&
+                        Math.abs(bx) + r < halfGoalWidth &&
+                        (by - r) < (this.goalHeight || 4)
+                    ) {
+                        this.scoreGoal('red');
+                    }
+                }
 
-    this.renderer.render(this.scene, this.camera);
-}
+                this.renderer.render(this.scene, this.camera);
+            }
         }
        
         new SoccerGame();
