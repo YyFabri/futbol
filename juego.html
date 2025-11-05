@@ -662,7 +662,7 @@
                 this.raycaster = new THREE.Raycaster();
                 this.collidableObjects = [];
 
-                this.worldGravity = -17;
+                this.worldGravity = -9.82;
                 this.playerGravity = -25;
 
                 this.world = new CANNON.World();
@@ -707,7 +707,8 @@
                 this.staminaFill = document.getElementById('stamina-fill');
                 this.powerMeter = document.getElementById('power-meter');
                 this.powerFill = document.getElementById('power-fill');
-               
+                this.playerPosition = null;
+                
                 this.init();
             }
            
@@ -1185,13 +1186,13 @@ socket.on('goalUpdate', (data) => {
                 const message = scoringTeam === 'blue' ? "¡Gol del equipo Azul!" : "¡Gol del equipo Rojo!";
                 this.showKickIndicator(message);
 
-                if (this.isBallAuthority) {
-                    socket.emit('goalScored', {
-                        room: currentRoomCode,
-                        team: scoringTeam
-                    });
-                }
-
+                // Permitimos que cualquier cliente reporte el gol.
+                // El servidor se encargará de sincronizarlo.
+                socket.emit('goalScored', {
+                    room: currentRoomCode,
+                    team: scoringTeam
+                });
+                
                 if (scoringTeam === 'blue') {
                     this.score.blue++;
                     this.lastTeamToScore = 'blue';
@@ -1281,6 +1282,7 @@ socket.on('goalUpdate', (data) => {
                         const position = btn.dataset.position;
                         
                         this.playerTeam = team;
+                        this.playerPosition = position;
                         this.hasSelectedPosition = true;
                         this.setPlayerStartPosition(team, position);
                         
@@ -1363,8 +1365,48 @@ socket.on('goalUpdate', (data) => {
                     this.keys[e.key.toLowerCase()] = true;
                     
                     if (e.code === 'Space' && (this.isOnGround || this.playerBody.position.y <= 1.05)) {
-                        this.playerBody.velocity.y = 10; 
-                        this.isOnGround = false;
+                        
+                        if (this.playerPosition === 'gk') {
+                            // --- LÓGICA DE ARQUERO ---
+                            const DIVE_HORIZONTAL_IMPULSE = 800; // Puedes ajustar esta fuerza
+                            const DIVE_VERTICAL_IMPULSE = 600;   // Cuánto salta hacia arriba
+                            
+                            let diveDirection = 0;
+                            if (this.keys['a']) {
+                                diveDirection = -1; // Izquierda
+                            } else if (this.keys['d']) {
+                                diveDirection = 1;  // Derecha
+                            }
+
+                            if (diveDirection !== 0) {
+                                // Calculamos el vector "derecha" de la cámara
+                                const yaw = this.cameraOrbit.yaw;
+                                const rightVec = new THREE.Vector3(-Math.sin(yaw - Math.PI / 2), 0, -Math.cos(yaw - Math.PI / 2));
+                                
+                                // Aplicamos el impulso horizontal
+                                const horizontalImpulse = rightVec.multiplyScalar(diveDirection * DIVE_HORIZONTAL_IMPULSE);
+                                
+                                const impulse = new CANNON.Vec3(
+                                    horizontalImpulse.x,
+                                    DIVE_VERTICAL_IMPULSE,
+                                    horizontalImpulse.z
+                                );
+                                
+                                // Usamos applyImpulse para un "empujón" instantáneo
+                                this.playerBody.applyImpulse(impulse, this.playerBody.position);
+                                this.isOnGround = false;
+
+                            } else {
+                                // Si solo presiona Espacio (sin A o D), salta normal
+                                this.playerBody.velocity.y = 10; 
+                                this.isOnGround = false;
+                            }
+                            
+                        } else {
+                            // --- LÓGICA DE JUGADOR NORMAL ---
+                            this.playerBody.velocity.y = 10; 
+                            this.isOnGround = false;
+                        }
                     }
                 });
                 
@@ -1449,8 +1491,8 @@ socket.on('goalUpdate', (data) => {
                    
                     if (Math.abs(this.swerveAccumX) > 5 || Math.abs(this.swerveAccumY) > 5) {
                         const MAX_SWERVE = 300;
-                        const SWERVE_POWER = 0.015;
-                        const LIFT_POWER = 0.076;
+                        const SWERVE_POWER = 0.08;
+                        const LIFT_POWER = 0.08;
 
                         const swerveX = Math.sign(this.swerveAccumX) *
                           Math.min(Math.abs(this.swerveAccumX), MAX_SWERVE);
@@ -1737,7 +1779,7 @@ socket.on('goalUpdate', (data) => {
                 
                 this.syncPhysicsToVisuals();
 
-                if (!this.goalScoredRecently && this.isBallAuthority) {
+                if (!this.goalScoredRecently) {
                     const goalDepth = this.goalDepth;
                     const goalWidth = 12;
                     const halfFieldLength = this.fieldLength / 2;
