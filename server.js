@@ -1,20 +1,26 @@
 // server.js
 
+// --- 1. Importar las librerías ---
 const express = require('express');
 const http = require('http');
 const path = require('path');
 const { Server } = require("socket.io");
+const CANNON = require('cannon-es');
 
+// --- 2. Configuración inicial ---
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// --- 3. Servir tu juego (el archivo HTML) ---
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'juego.html')); 
 });
 
+// --- 4. Almacenamiento de salas ---
 const activeRooms = {};
 
+// Función para generar un código de 4 letras
 function generateRoomCode() {
     let code = '';
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -24,7 +30,120 @@ function generateRoomCode() {
     return activeRooms[code] ? generateRoomCode() : code;
 }
 
+// REEMPLAZA ESTA FUNCIÓN COMPLETA en server.js
+
 function initializeRoomState() {
+    
+    // Configurar un mundo de física por sala
+    const world = new CANNON.World();
+    world.gravity.set(0, -9.82, 0);
+    world.defaultContactMaterial.friction = 0.1;
+
+    // --- Crear el cuerpo de la pelota en el servidor ---
+    const ballShape = new CANNON.Sphere(0.22); // ballRadius
+    const ballBody = new CANNON.Body({
+        mass: 0.43,
+        shape: ballShape,
+        linearDamping: 0.6,
+        angularDamping: 0.2,
+        material: new CANNON.Material({ friction: 0.2, restitution: 0.8 })
+    });
+    ballBody.position.set(0, 0.32, 0);
+    world.addBody(ballBody);
+
+    // --- AÑADIR SUELO ---
+    const groundShape = new CANNON.Plane();
+    const groundBody = new CANNON.Body({ mass: 0 });
+    groundBody.addShape(groundShape);
+    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+    world.addBody(groundBody);
+    
+    // --- AÑADIR PAREDES (Copiado de createWalls) ---
+    const fieldWidth = 50;
+    const fieldLength = 90;
+    const goalDepth = 3;
+    const goalHeight = 4;
+    const wallHeight = 20;
+    const goalWidth = 12;
+    const wallMat = new CANNON.Material({ friction: 0.1, restitution: 0.9 });
+    const sideSegmentWidth = (fieldWidth - goalWidth) / 2;
+    const leftSegmentCenterX = -(fieldWidth + goalWidth) / 4;
+    const rightSegmentCenterX = (fieldWidth + goalWidth) / 4;
+    const backZ = fieldLength / 2 + 0.5;
+    const frontZ = -fieldLength / 2 - 0.5;
+
+    const walls = [
+        { x: fieldWidth / 2 + 0.5, z: 0, w: 1, d: fieldLength },
+        { x: -fieldWidth / 2 - 0.5, z: 0, w: 1, d: fieldLength },
+        { x: leftSegmentCenterX, z: backZ, w: sideSegmentWidth, d: 1 },
+        { x: rightSegmentCenterX, z: backZ, w: sideSegmentWidth, d: 1 },
+        { x: leftSegmentCenterX, z: frontZ, w: sideSegmentWidth, d: 1 },
+        { x: rightSegmentCenterX, z: frontZ, w: sideSegmentWidth, d: 1 },
+    ];
+    walls.forEach(wall => {
+        const shape = new CANNON.Box(new CANNON.Vec3(wall.w / 2, wallHeight / 2, wall.d / 2));
+        const body = new CANNON.Body({ mass: 0, material: wallMat });
+        body.addShape(shape);
+        body.position.set(wall.x, wallHeight / 2, wall.z);
+        world.addBody(body);
+    });
+    // Techos (Copiado de createWalls)
+    const ceilingHeight = goalHeight;
+    const ceilingThickness = 0.5;
+    const fieldCenterLength = fieldLength - (goalDepth * 2);
+    const sideCeilingWidth = (fieldWidth - goalWidth) / 2;
+    const ceilings = [
+        { x: 0, z: 0, w: fieldWidth, d: fieldCenterLength },
+        { x: -(fieldWidth + goalWidth) / 4, z: fieldLength / 2, w: sideCeilingWidth, d: goalDepth },
+        { x: (fieldWidth + goalWidth) / 4, z: fieldLength / 2, w: sideCeilingWidth, d: goalDepth },
+        { x: -(fieldWidth + goalWidth) / 4, z: -fieldLength / 2, w: sideCeilingWidth, d: goalDepth },
+        { x: (fieldWidth + goalWidth) / 4, z: -fieldLength / 2, w: sideCeilingWidth, d: goalDepth }
+    ];
+    ceilings.forEach(ceiling => {
+        const shape = new CANNON.Box(new CANNON.Vec3(ceiling.w / 2, ceilingThickness / 2, ceiling.d / 2));
+        const body = new CANNON.Body({ mass: 0, material: wallMat });
+        body.addShape(shape);
+        body.position.set(ceiling.x, ceilingHeight, ceiling.z);
+        world.addBody(body);
+    });
+
+    // --- AÑADIR REDES DE PORTERÍA (Copiado de createGoals) ---
+    const netMat = new CANNON.Material({ friction: 0.1, restitution: 0.1 });
+    const createOneGoalPhysics = (zPos) => {
+        const netThickness = 0.2;
+        const netZOffset = zPos > 0 ? goalDepth / 2 : -goalDepth / 2;
+        const backNetShape = new CANNON.Box(new CANNON.Vec3(goalWidth / 2, goalHeight / 2, netThickness / 2));
+        const backNetBody = new CANNON.Body({ mass: 0, material: netMat });
+        backNetBody.addShape(backNetShape);
+        backNetBody.position.set(0, goalHeight / 2, zPos + netZOffset);
+        world.addBody(backNetBody);
+        const sideNetShape = new CANNON.Box(new CANNON.Vec3(netThickness / 2, goalHeight / 2, goalDepth / 2));
+        const leftNetBody = new CANNON.Body({ mass: 0, material: netMat });
+        leftNetBody.addShape(sideNetShape);
+        leftNetBody.position.set(-goalWidth / 2 - netThickness / 2, goalHeight / 2, zPos + netZOffset);
+        world.addBody(leftNetBody);
+        const rightNetBody = new CANNON.Body({ mass: 0, material: netMat });
+        rightNetBody.addShape(sideNetShape);
+        rightNetBody.position.set(goalWidth / 2 + netThickness / 2, goalHeight / 2, zPos + netZOffset);
+        world.addBody(rightNetBody);
+    };
+    createOneGoalPhysics(fieldLength / 2); createOneGoalPhysics(-fieldLength / 2);
+    
+    // --- AÑADIR IDENTIFICADORES (Copiado de createFieldIdentifiers) ---
+    const identifierHeight = 8; const identifierWidth = 15; const identifierDepth = 0.5;
+    const blueShape = new CANNON.Box(new CANNON.Vec3(identifierWidth / 2, identifierHeight / 2, identifierDepth / 2));
+    const blueBody = new CANNON.Body({ mass: 0 });
+    blueBody.addShape(blueShape);
+    blueBody.position.set(0, identifierHeight / 2, -fieldLength / 2 - 1);
+    world.addBody(blueBody);
+    const redShape = new CANNON.Box(new CANNON.Vec3(identifierWidth / 2, identifierHeight / 2, identifierDepth / 2));
+    const redBody = new CANNON.Body({ mass: 0 });
+    redBody.addShape(redShape);
+    redBody.position.set(0, identifierHeight / 2, fieldLength / 2 + 1);
+    world.addBody(redBody);
+
+    // --- FIN DE OBJETOS FÍSICOS ---
+
     return {
         players: {},
         occupiedPositions: {
@@ -34,27 +153,38 @@ function initializeRoomState() {
         gameState: {
             ballPosition: { x: 0, y: 0.32, z: 0 },
             ballVelocity: { x: 0, y: 0, z: 0 },
-            ballAngularVelocity: { x: 0, y: 0, z: 0 },
             score: { blue: 0, red: 0 },
             kickoffActive: true,
             currentKickoffTeam: 'red',
-            lastBallUpdate: Date.now(),
-            ballAuthority: null // Quien tiene el control de la pelota
-        }
+            goalScoredRecently: false
+        },
+        world: world,
+        ballBody: ballBody,
+        physicsInterval: null
     };
 }
 
+// --- 5. Lógica del Servidor ---
 io.on('connection', (socket) => {
     console.log(`Usuario conectado: ${socket.id}`);
 
+    // Crear sala
     socket.on('createRoom', () => {
         const roomCode = generateRoomCode();
         activeRooms[roomCode] = initializeRoomState();
+        
+        // --- Iniciar el bucle de física PARA ESTA SALA ---
+        activeRooms[roomCode].physicsInterval = setInterval(() => {
+            gameLoop(roomCode);
+        }, 1000 / 60); // 60 veces por segundo
+        // ------------------------------------------------
+        
         socket.join(roomCode);
         console.log(`Sala ${roomCode} creada por ${socket.id}`);
         socket.emit('roomCreated', roomCode);
     });
 
+    // Unirse a sala
     socket.on('joinRoom', (roomCode) => {
         const room = activeRooms[roomCode];
         if (!room) {
@@ -71,6 +201,7 @@ io.on('connection', (socket) => {
         });
     });
 
+    // Jugador listo
     socket.on('playerReady', (data) => {
         const room = activeRooms[data.room];
         if (!room) {
@@ -78,11 +209,13 @@ io.on('connection', (socket) => {
             return;
         }
         
+        // Si el jugador ya tenía una posición, liberarla primero
         const previousPlayerInfo = room.players[socket.id];
         if (previousPlayerInfo) {
             room.occupiedPositions[previousPlayerInfo.team][previousPlayerInfo.position] = false;
         }
         
+        // Verificar si la posición está ocupada (por OTRO jugador)
         if (room.occupiedPositions[data.team][data.position]) {
             socket.emit('positionOccupied', 'Esta posición ya está ocupada.');
             return;
@@ -96,6 +229,7 @@ io.on('connection', (socket) => {
         };
         console.log(`Jugador ${socket.id} (${data.nickname}) listo en sala ${data.room} como ${data.team} ${data.position}`);
         
+        // Notificar a TODOS (incluido el que cambió) sobre el cambio de posición
         io.to(data.room).emit('playerPositionChanged', {
             playerId: socket.id,
             team: data.team,
@@ -106,6 +240,7 @@ io.on('connection', (socket) => {
         socket.emit('allPlayers', room.players);
     });
 
+    // Sincronizar movimiento
     socket.on('playerMove', (data) => {
         socket.to(data.room).emit('playerMoved', {
             playerId: socket.id,
@@ -115,106 +250,31 @@ io.on('connection', (socket) => {
         });
     });
 
-    // ===== NUEVO SISTEMA DE AUTORIDAD =====
-    // El cliente solicita patear la pelota
-    socket.on('requestKick', (data) => {
+    // --- AÑADE EL NUEVO 'playerKicked' ---
+    socket.on('playerKicked', (data) => {
         const room = activeRooms[data.room];
-        if (!room) return;
-
-        const now = Date.now();
-        const timeSinceLastUpdate = now - room.gameState.lastBallUpdate;
-        
-        // Solo permitir patadas si han pasado al menos 100ms desde la última actualización
-        // Esto evita conflictos cuando dos jugadores patean simultáneamente
-        if (timeSinceLastUpdate < 100 && room.gameState.ballAuthority !== socket.id) {
-            // Rechazar la patada y enviar la posición actual de la pelota
-            socket.emit('kickRejected', {
-                position: room.gameState.ballPosition,
-                velocity: room.gameState.ballVelocity,
-                angularVelocity: room.gameState.ballAngularVelocity
-            });
-            return;
-        }
-
-        // Verificar kickoff
-        const playerInfo = room.players[socket.id];
-        if (room.gameState.kickoffActive && playerInfo) {
-            if (playerInfo.team !== room.gameState.currentKickoffTeam) {
-                socket.emit('kickRejected', {
-                    position: room.gameState.ballPosition,
-                    velocity: room.gameState.ballVelocity,
-                    angularVelocity: room.gameState.ballAngularVelocity
-                });
-                return;
-            }
-            room.gameState.kickoffActive = false;
-            io.to(data.room).emit('kickoffComplete');
-        }
-
-        // Actualizar estado de la pelota
-        room.gameState.ballPosition = data.position;
-        room.gameState.ballVelocity = data.velocity;
-        room.gameState.ballAngularVelocity = data.angularVelocity || { x: 0, y: 0, z: 0 };
-        room.gameState.lastBallUpdate = now;
-        room.gameState.ballAuthority = socket.id;
-
-        // Enviar a TODOS los clientes (incluido quien pateó) la actualización oficial
-        io.to(data.room).emit('ballSync', {
-            position: room.gameState.ballPosition,
-            velocity: room.gameState.ballVelocity,
-            angularVelocity: room.gameState.ballAngularVelocity,
-            timestamp: now
-        });
-
-        // Liberar la autoridad después de 500ms
-        setTimeout(() => {
-            if (room.gameState.ballAuthority === socket.id) {
-                room.gameState.ballAuthority = null;
-            }
-        }, 500);
-    });
-
-    // Actualización periódica de la pelota (para sincronización continua)
-    socket.on('ballUpdate', (data) => {
-        const room = activeRooms[data.room];
-        if (!room) return;
-
-        // Solo actualizar si este cliente tiene autoridad o si ha pasado suficiente tiempo
-        const now = Date.now();
-        const timeSinceLastUpdate = now - room.gameState.lastBallUpdate;
-        
-        if (room.gameState.ballAuthority === socket.id || timeSinceLastUpdate > 200) {
-            room.gameState.ballPosition = data.position;
-            room.gameState.ballVelocity = data.velocity;
-            room.gameState.ballAngularVelocity = data.angularVelocity || { x: 0, y: 0, z: 0 };
-            room.gameState.lastBallUpdate = now;
+        if (room && room.ballBody) {
             
-            socket.to(data.room).emit('ballSync', {
-                position: data.position,
-                velocity: data.velocity,
-                angularVelocity: data.angularVelocity
-            });
-        }
-    });
+            // Aquí puedes añadir tu lógica de kickoff si quieres
+            // if (room.gameState.kickoffActive && ...) { ... }
 
-    socket.on('goalScored', (data) => {
-        const room = activeRooms[data.room];
-        if (room) {
-            if (data.team === 'blue') {
-                room.gameState.score.blue++;
-            } else {
-                room.gameState.score.red++;
+            // Aplicar la patada en la física del SERVIDOR
+            room.ballBody.velocity.setZero();
+            room.ballBody.angularVelocity.setZero();
+            
+            const impulseVec = new CANNON.Vec3(data.impulse.x, data.impulse.y, data.impulse.z);
+            room.ballBody.applyImpulse(impulseVec, room.ballBody.position);
+            
+            if (data.angularVelocity) {
+                const angularVec = new CANNON.Vec3(data.angularVelocity.x, data.angularVelocity.y, data.angularVelocity.z);
+                room.ballBody.angularVelocity.copy(angularVec);
             }
-            room.gameState.currentKickoffTeam = data.team === 'blue' ? 'red' : 'blue';
-            room.gameState.kickoffActive = true;
-            room.gameState.ballAuthority = null; // Resetear autoridad
-            io.to(data.room).emit('goalUpdate', {
-                score: room.gameState.score,
-                currentKickoffTeam: room.gameState.currentKickoffTeam
-            });
         }
     });
 
+    
+
+    // Saque inicial
     socket.on('kickoffTaken', (data) => {
         const room = activeRooms[data.room];
         if (room) {
@@ -223,6 +283,7 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Solicitar estado actualizado de la sala
     socket.on('requestRoomState', (roomCode) => {
         const room = activeRooms[roomCode];
         if (room) {
@@ -234,6 +295,7 @@ io.on('connection', (socket) => {
         }
     });
 
+// Desconexión
     socket.on('disconnect', () => {
         console.log(`Usuario desconectado: ${socket.id}`);
         for (const roomCode in activeRooms) {
@@ -242,15 +304,15 @@ io.on('connection', (socket) => {
             if (playerInfo) {
                 room.occupiedPositions[playerInfo.team][playerInfo.position] = false;
                 delete room.players[socket.id];
-                
-                // Si este jugador tenía autoridad, liberarla
-                if (room.gameState.ballAuthority === socket.id) {
-                    room.gameState.ballAuthority = null;
-                }
-                
                 console.log(`Jugador ${socket.id} salió de la sala ${roomCode}`);
                 io.to(roomCode).emit('playerLeft', socket.id);
                 if (Object.keys(room.players).length === 0) {
+                    
+                    // Limpiar el intervalo de física antes de borrar la sala
+                    if (room.physicsInterval) {
+                        clearInterval(room.physicsInterval);
+                    }
+                    
                     delete activeRooms[roomCode];
                     console.log(`Sala ${roomCode} eliminada (vacía).`);
                 }
@@ -260,6 +322,70 @@ io.on('connection', (socket) => {
     });
 });
 
+
+// REEMPLAZA ESTA FUNCIÓN en server.js
+
+function gameLoop(roomCode) {
+    const room = activeRooms[roomCode];
+    if (!room) return;
+
+    // 1. Avanzar la física
+    room.world.step(1 / 60); // 60 FPS
+
+    // 2. Lógica de Detección de Gol (sin cambios)
+    if (!room.gameState.goalScoredRecently) {
+        const bx = room.ballBody.position.x;
+        const by = room.ballBody.position.y;
+        const bz = room.ballBody.position.z;
+        const r = 0.22;
+        const halfFieldLength = 45;
+        const halfGoalWidth = 6;
+        const goalHeight = 4;
+        let scoringTeam = null;
+        if ((bz - r) > halfFieldLength && Math.abs(bx) + r < halfGoalWidth && (by - r) < goalHeight) {
+            scoringTeam = 'blue';
+        }
+        if ((bz + r) < -halfFieldLength && Math.abs(bx) + r < halfGoalWidth && (by - r) < goalHeight) {
+            scoringTeam = 'red';
+        }
+        if (scoringTeam) {
+            room.gameState.goalScoredRecently = true;
+            if (scoringTeam === 'blue') {
+                room.gameState.score.blue++;
+                room.gameState.currentKickoffTeam = 'red';
+            } else {
+                room.gameState.score.red++;
+                room.gameState.currentKickoffTeam = 'blue';
+            }
+            room.gameState.kickoffActive = true;
+            io.to(roomCode).emit('goalUpdate', {
+                score: room.gameState.score,
+                currentKickoffTeam: room.gameState.currentKickoffTeam
+            });
+            setTimeout(() => {
+                if (activeRooms[roomCode]) {
+                    room.ballBody.position.set(0, 0.32, 0);
+                    room.ballBody.velocity.set(0, 0, 0);
+                    room.ballBody.angularVelocity.set(0, 0, 0);
+                    room.gameState.kickoffActive = true;
+                    room.gameState.goalScoredRecently = false;
+                }
+            }, 3000);
+        }
+    }
+
+    // 3. Retransmitir el estado autoritativo
+    // --- ¡¡MODIFICACIÓN!! ---
+    // Ahora también enviamos el 'quaternion' (rotación)
+    io.to(roomCode).emit('ballSync', {
+        position: room.ballBody.position,
+        quaternion: room.ballBody.quaternion // <--- AÑADE ESTA LÍNEA
+    });
+}
+
+
+
+// --- 6. Iniciar el servidor ---
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
