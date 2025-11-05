@@ -1179,34 +1179,10 @@ socket.on('goalUpdate', (data) => {
                 this.world.addBody(this.ballBody);
             }
 
-            scoreGoal(scoringTeam) {
-                if (this.goalScoredRecently) return;
-                this.goalScoredRecently = true;
+            
 
-                const message = scoringTeam === 'blue' ? "¡Gol del equipo Azul!" : "¡Gol del equipo Rojo!";
-                this.showKickIndicator(message);
 
-                // Permitimos que cualquier cliente reporte el gol.
-                // El servidor se encargará de sincronizarlo.
-                socket.emit('goalScored', {
-                    room: currentRoomCode,
-                    team: scoringTeam
-                });
-                
-                if (scoringTeam === 'blue') {
-                    this.score.blue++;
-                    this.lastTeamToScore = 'blue';
-                    this.currentKickoffTeam = 'red';
-                } else {
-                    this.score.red++;
-                    this.lastTeamToScore = 'red';
-                    this.currentKickoffTeam = 'blue';
-                }
 
-                this.updateScore();
-                
-            }
-           
             createPlayer() {
                 const radius = 0.5; const height = 1.8;
                 const playerGeo = new THREE.CapsuleGeometry(radius, height - radius * 2, 16, 16);
@@ -1449,6 +1425,7 @@ socket.on('goalUpdate', (data) => {
                 document.addEventListener('contextmenu', (e) => e.preventDefault());
             }
 
+            // REEMPLAZA ESTA FUNCIÓN
             executeKick() {
                 if (!this.isBallInKickArea()) {
                     this.isCharging = false;
@@ -1469,6 +1446,7 @@ socket.on('goalUpdate', (data) => {
                     }
                 }
                
+                // Esta lógica de cálculo se mantiene
                 const chargeRatio = Math.min(this.chargeTime / this.maxChargeTime, 1);
                 const powerCurve = Math.pow(chargeRatio, 1.7);
                 const isPass = this.kickButton === 2;
@@ -1482,6 +1460,8 @@ socket.on('goalUpdate', (data) => {
                     -Math.tan(this.cameraOrbit.pitch) * 0.1,
                     -Math.cos(this.cameraOrbit.yaw)
                 );
+                
+                let angularVel = { x: 0, y: 0, z: 0 }; // Objeto para la velocidad angular
                
                 if (isPass) {
                     kickDir.y = 0.1;
@@ -1506,52 +1486,40 @@ socket.on('goalUpdate', (data) => {
                             .multiplyScalar(-swerveY * LIFT_POWER * powerCurve);
                        
                         kickDir.add(sideForce).add(liftForce);
+                        
+                        // Guardamos la velocidad angular
+                        angularVel = {
+                            x: this.swerveAccumY * 0.1,
+                            y: this.swerveAccumX * 0.1,
+                            z: 0
+                        };
                     }
                 }
                
-                this.ballBody.velocity.setZero();
-                this.ballBody.angularVelocity.setZero();
+                // --- ¡YA NO SE APLICA FÍSICA AQUÍ! ---
+                // Se eliminaron las líneas:
+                // this.ballBody.velocity.setZero();
+                // this.ballBody.angularVelocity.setZero();
+                // const impulse = new CANNON.Vec3(kickDir.x, kickDir.y, kickDir.z);
+                // this.ballBody.applyImpulse(impulse);
+                // ... y el socket.emit('ballUpdate', ...)
+                // --- FIN DE ELIMINACIÓN ---
                
-                const impulse = new CANNON.Vec3(kickDir.x, kickDir.y, kickDir.z);
-                this.ballBody.applyImpulse(impulse);
+
+                // --- NUEVO CÓDIGO ---
+                // Enviamos la "intención" de patear al servidor
+                socket.emit('playerKicked', {
+                    room: currentRoomCode,
+                    impulse: { x: kickDir.x, y: kickDir.y, z: kickDir.z },
+                    angularVelocity: angularVel // Enviamos el objeto de vel. angular
+                });
+                // --- FIN DE NUEVO CÓDIGO ---
                
-                if (!isPass && (Math.abs(this.swerveAccumX) > 5 || Math.abs(this.swerveAccumY) > 5)) {
-                    const spinForce = new CANNON.Vec3(
-                        this.swerveAccumY * 0.1,
-                        this.swerveAccumX * 0.1,
-                        0
-                    );
-                    this.ballBody.angularVelocity.copy(spinForce);
-                }
-               
-                        const now = Date.now();
-                        this.lastBallUpdate = now;
-                        socket.emit('ballUpdate', {
-                            room: currentRoomCode,
-                            position: {
-                                x: this.ballBody.position.x,
-                                y: this.ballBody.position.y,
-                                z: this.ballBody.position.z
-                            },
-                            velocity: {
-                                x: this.ballBody.velocity.x,
-                                y: this.ballBody.velocity.y,
-                                z: this.ballBody.velocity.z
-                            },
-                            angularVelocity: {
-                                x: this.ballBody.angularVelocity.x,
-                                y: this.ballBody.angularVelocity.y,
-                                z: this.ballBody.angularVelocity.z
-                            }
-                        });
-                    
-
-
-
-
                 this.isCharging = false;
                 this.powerMeter.style.display = 'none';
             }
+
+
 
             isBallInKickArea() {
                 const MAX_KICK_DISTANCE = 3;
@@ -1779,33 +1747,7 @@ socket.on('goalUpdate', (data) => {
                 
                 this.syncPhysicsToVisuals();
 
-                if (!this.goalScoredRecently) {
-                    const goalDepth = this.goalDepth;
-                    const goalWidth = 12;
-                    const halfFieldLength = this.fieldLength / 2;
-                    const halfGoalWidth = goalWidth / 2;
-
-                    const bx = this.ballBody.position.x;
-                    const by = this.ballBody.position.y;
-                    const bz = this.ballBody.position.z;
-                    const r  = this.ballRadius;
-
-                    if (
-                        (bz - r) > halfFieldLength &&
-                        Math.abs(bx) + r < halfGoalWidth &&
-                        (by - r) < (this.goalHeight || 4)
-                    ) {
-                        this.scoreGoal('blue');
-                    }
-
-                    if (
-                        (bz + r) < -halfFieldLength &&
-                        Math.abs(bx) + r < halfGoalWidth &&
-                        (by - r) < (this.goalHeight || 4)
-                    ) {
-                        this.scoreGoal('red');
-                    }
-                }
+                
 
                 this.renderer.render(this.scene, this.camera);
             }
