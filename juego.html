@@ -843,15 +843,35 @@ socket.on('goalUpdate', (data) => {
                 label.style.color = team === 'blue' ? '#3b82f6' : '#ef4444';
                 document.getElementById('overlay').appendChild(label);
 
+                // --- INICIO: AÑADIR CUERPO FÍSICO ---
+                const playerShape = new CANNON.Sphere(radius);
+                const otherPlayerBody = new CANNON.Body({
+                    mass: 0, // Cuerpo estático. Su posición la dicta el servidor.
+                    shape: playerShape,
+                    collisionFilterGroup: GROUP_PLAYER, // Es un jugador
+                    // Debe colisionar con nuestro jugador y la pelota
+                    collisionFilterMask: GROUP_PLAYER | GROUP_BALL | GROUP_GROUND | GROUP_WALL | GROUP_NET 
+                });
+                this.world.addBody(otherPlayerBody);
+                // --- FIN: AÑADIR CUERPO FÍSICO ---
+
                 this.otherPlayers[playerId] = {
                     mesh: playerMesh,
+                    body: otherPlayerBody, // Almacenamos el cuerpo físico
                     label: label,
                     targetPosition: this.getStartPosition(team, position),
                     targetRotation: 0
                 };
 
-                playerMesh.position.copy(this.getStartPosition(team, position));
+                const startPos = this.getStartPosition(team, position);
+                playerMesh.position.copy(startPos);
+                
+                // Sincronizamos el cuerpo físico con la posición inicial
+                // (restamos 0.4 de 'y' para compensar el offset visual de la cápsula)
+                otherPlayerBody.position.copy(startPos);
+                otherPlayerBody.position.y -= 0.4;
             }
+
 
             getStartPosition(team, position) {
                 const positions = {
@@ -881,6 +901,7 @@ socket.on('goalUpdate', (data) => {
                 const player = this.otherPlayers[playerId];
                 if (player) {
                     this.scene.remove(player.mesh);
+                    this.world.removeBody(player.body); // Eliminar el cuerpo físico del mundo
                     player.label.remove();
                     delete this.otherPlayers[playerId];
                 }
@@ -1157,13 +1178,37 @@ socket.on('goalUpdate', (data) => {
                 this.world.addBody(redBody);
             }
 
-            createBall() {
+           createBall() {
                 const ballGeo = new THREE.SphereGeometry(this.ballRadius, 32, 32);
                 const ballMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.2, roughness: 0.8 });
                 this.ballMesh = new THREE.Mesh(ballGeo, ballMat);
                 this.ballMesh.castShadow = true;
                 this.ballMesh.receiveShadow = true;
                 this.scene.add(this.ballMesh);
+
+                // --- INICIO: AÑADIR GLOW AMARILLO ---
+                const glowMatInner = new THREE.MeshBasicMaterial({
+                    color: 0xfbbf24, // Amarillo brillante
+                    transparent: true,
+                    opacity: 0.5,
+                    depthTest: false, // Renderizar a través de todo
+                    depthWrite: false
+                });
+                const glowGeoInner = new THREE.SphereGeometry(this.ballRadius * 1.3, 32, 32); // 30% más grande
+                this.ballGlowMeshInner = new THREE.Mesh(glowGeoInner, glowMatInner);
+                this.ballMesh.add(this.ballGlowMeshInner); // Añadir como hijo
+
+                const glowMatOuter = new THREE.MeshBasicMaterial({
+                    color: 0xf59e0b, // Naranja/amarillo
+                    transparent: true,
+                    opacity: 0.3,
+                    depthTest: false, // Renderizar a través de todo
+                    depthWrite: false
+                });
+                const glowGeoOuter = new THREE.SphereGeometry(this.ballRadius * 1.8, 32, 32); // 80% más grande
+                this.ballGlowMeshOuter = new THREE.Mesh(glowGeoOuter, glowMatOuter);
+                this.ballMesh.add(this.ballGlowMeshOuter); // Añadir como hijo
+                // --- FIN: AÑADIR GLOW ---
                
                 const ballShape = new CANNON.Sphere(this.ballRadius);
                 this.ballBody = new CANNON.Body({
@@ -1181,7 +1226,6 @@ socket.on('goalUpdate', (data) => {
                 this.ballBody.position.set(0, this.ballRadius + 0.1, 0);
                 
             }
-
             
 
 
@@ -1244,9 +1288,11 @@ socket.on('goalUpdate', (data) => {
 
             setPlayerKickoffCollision(isKickoff) {
                 if (isKickoff) {
-                    this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_NET;
+                    // Permitir colisiones con jugadores incluso durante el saque
+                    this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_NET | GROUP_PLAYER;
                 } else {
-                    this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_BALL | GROUP_NET;
+                    // Permitir colisiones con jugadores y la pelota
+                    this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_BALL | GROUP_NET | GROUP_PLAYER;
                 }
             }
            
@@ -1688,7 +1734,7 @@ socket.on('goalUpdate', (data) => {
                     this.playerBody.applyForce(extraForce, this.playerBody.position);
                 }
 
-                // El world.step() del cliente ahora SOLO simula al jugador
+                // El world.step() del cliente ahora simula al jugador Y sus colisiones
                 this.world.step(1/60, dt, 10); 
                 
                 if (this.gameStarted) {
@@ -1723,10 +1769,17 @@ socket.on('goalUpdate', (data) => {
                 for (const playerId in this.otherPlayers) {
                     const player = this.otherPlayers[playerId];
                     if (player.targetPosition) {
+                        // 1. Interpolar la malla VISUAL como antes
                         player.mesh.position.lerp(player.targetPosition, 0.2);
                         player.mesh.rotation.y = player.targetRotation;
+
+                        // 2. Sincronizar el cuerpo FÍSICO (estático) con la malla visual
+                        //    Restamos 0.4y para compensar el offset visual de la cápsula
+                        player.body.position.copy(player.mesh.position);
+                        player.body.position.y -= 0.4;
                     }
                     
+                    // La lógica del label sigue usando la malla (mesh)
                     const screenPos = player.mesh.position.clone();
                     screenPos.y += 1.5;
                     screenPos.project(this.camera);
@@ -1749,23 +1802,15 @@ socket.on('goalUpdate', (data) => {
                 // --- INICIO: CÓDIGO NUEVO PARA LA PELOTA ---
                 
                 // 1. INTERPOLACIÓN (Suavizado)
-                // Movemos la pelota VISUAL (ballMesh) suavemente (lerp)
-                // hacia la posición que el servidor nos dijo (serverBallState)
                 const interpolationFactor = 0.3; // Puedes ajustar este valor
                 this.ballMesh.position.lerp(this.serverBallState.position, interpolationFactor);
                 this.ballMesh.quaternion.slerp(this.serverBallState.quaternion, interpolationFactor);
                 
                 // 2. ACTUALIZACIÓN DEL "FANTASMA"
-                // Actualizamos nuestro 'ballBody' (que ya no está en el world)
-                // para que esté donde la pelota visual está.
-                // Esto es crucial para que 'isBallInKickArea()' siga funcionando.
                 this.ballBody.position.copy(this.ballMesh.position);
                 this.ballBody.quaternion.copy(this.ballMesh.quaternion);
                 
                 // --- FIN: CÓDIGO NUEVO PARA LA PELOTA ---
-
-                // La detección de gol del cliente (if !this.goalScoredRecently) 
-                // ya fue eliminada, lo cual es correcto.
 
                 this.renderer.render(this.scene, this.camera);
             }
