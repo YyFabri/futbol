@@ -1289,7 +1289,7 @@ socket.on('goalUpdate', (data) => {
 
             setPlayerKickoffCollision(isKickoff) {
                 if (isKickoff) {
-                    // Permitir colisiones con jugadores incluso durante el saque
+                    // Permitir coliiones con jugadores incluso durante el saque
                     this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_NET | GROUP_PLAYER;
                 } else {
                     // Permitir colisiones con jugadores y la pelota

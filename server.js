@@ -30,8 +30,31 @@ function generateRoomCode() {
     return activeRooms[code] ? generateRoomCode() : code;
 }
 
-// REEMPLAZA ESTA FUNCIÓN COMPLETA en server.js
 
+// Función para obtener la posición inicial (copiada del cliente)
+function getStartPosition(team, position) {
+    const positions = {
+        blue: {
+            'gk': { x: 0, y: 0.5, z: -40 },
+            'def-left': { x: -8, y: 0.5, z: -25 },
+            'def-right': { x: 8, y: 0.5, z: -25 },
+            'fwd-left': { x: -8, y: 0.5, z: -10 },
+            'fwd-right': { x: 8, y: 0.5, z: -10 }
+        },
+        red: {
+            'gk': { x: 0, y: 0.5, z: 40 },
+            'def-left': { x: -8, y: 0.5, z: 25 },
+            'def-right': { x: 8, y: 0.5, z: 25 },
+            'fwd-left': { x: -8, y: 0.5, z: 10 },
+            'fwd-right': { x: 8, y: 0.5, z: 10 }
+        }
+    };
+    const pos = positions[team][position];
+    return new CANNON.Vec3(pos.x, pos.y, pos.z);
+}
+
+
+// REEMPLAZA ESTA FUNCIÓN COMPLETA en server.js
 function initializeRoomState() {
     
     // Configurar un mundo de física por sala
@@ -46,14 +69,20 @@ function initializeRoomState() {
         shape: ballShape,
         linearDamping: 0.6,
         angularDamping: 0.2,
-        material: new CANNON.Material({ friction: 0.2, restitution: 0.8 })
+        material: new CANNON.Material({ friction: 0.2, restitution: 0.8 }),
+        collisionFilterGroup: GROUP_BALL, // Es la pelota
+        collisionFilterMask: GROUP_EVERYTHING // Colisiona con todo
     });
     ballBody.position.set(0, 0.32, 0);
     world.addBody(ballBody);
 
     // --- AÑADIR SUELO ---
     const groundShape = new CANNON.Plane();
-    const groundBody = new CANNON.Body({ mass: 0 });
+    const groundBody = new CANNON.Body({ 
+        mass: 0,
+        collisionFilterGroup: GROUP_GROUND,
+        collisionFilterMask: GROUP_PLAYER | GROUP_BALL // El suelo colisiona con jugador y pelota
+    });
     groundBody.addShape(groundShape);
     groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
     world.addBody(groundBody);
@@ -82,7 +111,12 @@ function initializeRoomState() {
     ];
     walls.forEach(wall => {
         const shape = new CANNON.Box(new CANNON.Vec3(wall.w / 2, wallHeight / 2, wall.d / 2));
-        const body = new CANNON.Body({ mass: 0, material: wallMat });
+        const body = new CANNON.Body({ 
+            mass: 0, 
+            material: wallMat,
+            collisionFilterGroup: GROUP_WALL,
+            collisionFilterMask: GROUP_PLAYER | GROUP_BALL // Paredes colisionan con jugador y pelota
+        });
         body.addShape(shape);
         body.position.set(wall.x, wallHeight / 2, wall.z);
         world.addBody(body);
@@ -101,7 +135,12 @@ function initializeRoomState() {
     ];
     ceilings.forEach(ceiling => {
         const shape = new CANNON.Box(new CANNON.Vec3(ceiling.w / 2, ceilingThickness / 2, ceiling.d / 2));
-        const body = new CANNON.Body({ mass: 0, material: wallMat });
+        const body = new CANNON.Body({ 
+            mass: 0, 
+            material: wallMat,
+            collisionFilterGroup: GROUP_WALL,
+            collisionFilterMask: GROUP_BALL // Techos solo con pelota
+        });
         body.addShape(shape);
         body.position.set(ceiling.x, ceilingHeight, ceiling.z);
         world.addBody(body);
@@ -113,16 +152,31 @@ function initializeRoomState() {
         const netThickness = 0.2;
         const netZOffset = zPos > 0 ? goalDepth / 2 : -goalDepth / 2;
         const backNetShape = new CANNON.Box(new CANNON.Vec3(goalWidth / 2, goalHeight / 2, netThickness / 2));
-        const backNetBody = new CANNON.Body({ mass: 0, material: netMat });
+        const backNetBody = new CANNON.Body({ 
+            mass: 0, 
+            material: netMat,
+            collisionFilterGroup: GROUP_NET,
+            collisionFilterMask: GROUP_PLAYER | GROUP_BALL
+        });
         backNetBody.addShape(backNetShape);
         backNetBody.position.set(0, goalHeight / 2, zPos + netZOffset);
         world.addBody(backNetBody);
         const sideNetShape = new CANNON.Box(new CANNON.Vec3(netThickness / 2, goalHeight / 2, goalDepth / 2));
-        const leftNetBody = new CANNON.Body({ mass: 0, material: netMat });
+        const leftNetBody = new CANNON.Body({ 
+            mass: 0, 
+            material: netMat,
+            collisionFilterGroup: GROUP_NET,
+            collisionFilterMask: GROUP_PLAYER | GROUP_BALL
+        });
         leftNetBody.addShape(sideNetShape);
         leftNetBody.position.set(-goalWidth / 2 - netThickness / 2, goalHeight / 2, zPos + netZOffset);
         world.addBody(leftNetBody);
-        const rightNetBody = new CANNON.Body({ mass: 0, material: netMat });
+        const rightNetBody = new CANNON.Body({ 
+            mass: 0, 
+            material: netMat,
+            collisionFilterGroup: GROUP_NET,
+            collisionFilterMask: GROUP_PLAYER | GROUP_BALL
+        });
         rightNetBody.addShape(sideNetShape);
         rightNetBody.position.set(goalWidth / 2 + netThickness / 2, goalHeight / 2, zPos + netZOffset);
         world.addBody(rightNetBody);
@@ -132,12 +186,20 @@ function initializeRoomState() {
     // --- AÑADIR IDENTIFICADORES (Copiado de createFieldIdentifiers) ---
     const identifierHeight = 8; const identifierWidth = 15; const identifierDepth = 0.5;
     const blueShape = new CANNON.Box(new CANNON.Vec3(identifierWidth / 2, identifierHeight / 2, identifierDepth / 2));
-    const blueBody = new CANNON.Body({ mass: 0 });
+    const blueBody = new CANNON.Body({ 
+        mass: 0,
+        collisionFilterGroup: GROUP_WALL,
+        collisionFilterMask: GROUP_PLAYER | GROUP_BALL
+    });
     blueBody.addShape(blueShape);
     blueBody.position.set(0, identifierHeight / 2, -fieldLength / 2 - 1);
     world.addBody(blueBody);
     const redShape = new CANNON.Box(new CANNON.Vec3(identifierWidth / 2, identifierHeight / 2, identifierDepth / 2));
-    const redBody = new CANNON.Body({ mass: 0 });
+    const redBody = new CANNON.Body({ 
+        mass: 0,
+        collisionFilterGroup: GROUP_WALL,
+        collisionFilterMask: GROUP_PLAYER | GROUP_BALL
+    });
     redBody.addShape(redShape);
     redBody.position.set(0, identifierHeight / 2, fieldLength / 2 + 1);
     world.addBody(redBody);
@@ -146,6 +208,7 @@ function initializeRoomState() {
 
     return {
         players: {},
+        playerBodies: {}, // <-- AÑADE ESTO
         occupiedPositions: {
             blue: { gk: false, 'def-left': false, 'def-right': false, 'fwd-left': false, 'fwd-right': false },
             red: { gk: false, 'def-left': false, 'def-right': false, 'fwd-left': false, 'fwd-right': false }
@@ -157,7 +220,7 @@ function initializeRoomState() {
             kickoffActive: true,
             currentKickoffTeam: 'red',
             goalScoredRecently: false,
-            isBallOutOfBounds: false // <--- AÑADE ESTA LÍNEA
+            isBallOutOfBounds: false
         },
         world: world,
         ballBody: ballBody,
@@ -203,22 +266,38 @@ io.on('connection', (socket) => {
     });
 
     // Jugador listo
-    socket.on('playerReady', (data) => {
+   socket.on('playerReady', (data) => {
         const room = activeRooms[data.room];
         if (!room) {
             socket.emit('lobbyError', 'La sala no existe.');
             return;
         }
         
-        // Si el jugador ya tenía una posición, liberarla primero
+        // --- INICIO: LÓGICA DE ACTUALIZACIÓN DE CUERPO FÍSICO ---
+        // Si el jugador ya tenía un cuerpo (cambio de equipo/pos), eliminarlo
+        const oldBody = room.playerBodies[socket.id];
+        if (oldBody) {
+            room.world.removeBody(oldBody);
+        }
+        
+        // Si el jugador ya tenía una posición, liberarla
         const previousPlayerInfo = room.players[socket.id];
         if (previousPlayerInfo) {
             room.occupiedPositions[previousPlayerInfo.team][previousPlayerInfo.position] = false;
         }
-        
+        // --- FIN: LÓGICA DE ACTUALIZACIÓN ---
+
         // Verificar si la posición está ocupada (por OTRO jugador)
         if (room.occupiedPositions[data.team][data.position]) {
             socket.emit('positionOccupied', 'Esta posición ya está ocupada.');
+            // Devolver el cuerpo antiguo si lo tenía, ya que el cambio falló
+            if (oldBody) {
+                room.world.addBody(oldBody);
+            }
+            // Devolver la posición antigua si la tenía
+            if (previousPlayerInfo) {
+                 room.occupiedPositions[previousPlayerInfo.team][previousPlayerInfo.position] = true;
+            }
             return;
         }
         
@@ -228,6 +307,25 @@ io.on('connection', (socket) => {
             position: data.position,
             nickname: data.nickname
         };
+
+        // --- INICIO: CREAR NUEVO CUERPO FÍSICO ---
+        const radius = 0.5;
+        const playerShape = new CANNON.Sphere(radius);
+        const playerBody = new CANNON.Body({
+            mass: 0, // Kinemático/Estático: su posición es controlada por el cliente
+            shape: playerShape,
+            collisionFilterGroup: GROUP_PLAYER,
+            collisionFilterMask: GROUP_EVERYTHING
+        });
+
+        // Obtener la posición inicial del servidor
+        const startPos = getStartPosition(data.team, data.position);
+        playerBody.position.copy(startPos);
+        
+        room.world.addBody(playerBody);
+        room.playerBodies[socket.id] = playerBody; // Guardar el cuerpo
+        // --- FIN: CREAR NUEVO CUERPO FÍSICO ---
+
         console.log(`Jugador ${socket.id} (${data.nickname}) listo en sala ${data.room} como ${data.team} ${data.position}`);
         
         // Notificar a TODOS (incluido el que cambió) sobre el cambio de posición
@@ -238,17 +336,37 @@ io.on('connection', (socket) => {
             nickname: data.nickname
         });
         
+        // Enviar estado de la sala y jugadores al jugador que se acaba de unir/cambiar
+        socket.emit('roomState', {
+             occupiedPositions: room.occupiedPositions,
+             gameState: room.gameState,
+             players: room.players
+        });
+        // Enviar todos los jugadores existentes al nuevo jugador
         socket.emit('allPlayers', room.players);
     });
 
     // Sincronizar movimiento
     socket.on('playerMove', (data) => {
-        socket.to(data.room).emit('playerMoved', {
-            playerId: socket.id,
-            position: data.position,
-            rotation: data.rotation,
-            velocity: data.velocity
-        });
+        const room = activeRooms[data.room];
+        if (room) {
+            // --- INICIO: ACTUALIZAR FÍSICA DEL JUGADOR ---
+            const playerBody = room.playerBodies[socket.id];
+            if (playerBody) {
+                // Actualizar la posición y velocidad del cuerpo en el servidor
+                playerBody.position.copy(data.position);
+                playerBody.velocity.copy(data.velocity);
+            }
+            // --- FIN: ACTUALIZAR FÍSICA ---
+
+            // Retransmitir a otros clientes (sin cambios)
+            socket.to(data.room).emit('playerMoved', {
+                playerId: socket.id,
+                position: data.position,
+                rotation: data.rotation,
+                velocity: data.velocity
+            });
+        }
     });
 
     // --- AÑADE EL NUEVO 'playerKicked' ---
@@ -302,18 +420,28 @@ io.on('connection', (socket) => {
         for (const roomCode in activeRooms) {
             const room = activeRooms[roomCode];
             const playerInfo = room.players[socket.id];
+            
             if (playerInfo) {
+                // Liberar la posición ocupada
                 room.occupiedPositions[playerInfo.team][playerInfo.position] = false;
                 delete room.players[socket.id];
+
+                // --- INICIO: LIMPIAR CUERPO FÍSICO ---
+                const playerBody = room.playerBodies[socket.id];
+                if (playerBody) {
+                    room.world.removeBody(playerBody); // Eliminar del mundo físico
+                    delete room.playerBodies[socket.id]; // Eliminar de nuestro registro
+                }
+                // --- FIN: LIMPIAR CUERPO FÍSICO ---
+
                 console.log(`Jugador ${socket.id} salió de la sala ${roomCode}`);
                 io.to(roomCode).emit('playerLeft', socket.id);
+                
+                // Eliminar la sala si está vacía
                 if (Object.keys(room.players).length === 0) {
-                    
-                    // Limpiar el intervalo de física antes de borrar la sala
                     if (room.physicsInterval) {
                         clearInterval(room.physicsInterval);
                     }
-                    
                     delete activeRooms[roomCode];
                     console.log(`Sala ${roomCode} eliminada (vacía).`);
                 }
