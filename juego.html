@@ -1499,16 +1499,7 @@ socket.on('goalUpdate', (data) => {
                     }
                 }
                
-                // --- ¡YA NO SE APLICA FÍSICA AQUÍ! ---
-                // Se eliminaron las líneas:
-                // this.ballBody.velocity.setZero();
-                // this.ballBody.angularVelocity.setZero();
-                // const impulse = new CANNON.Vec3(kickDir.x, kickDir.y, kickDir.z);
-                // this.ballBody.applyImpulse(impulse);
-                // ... y el socket.emit('ballUpdate', ...)
-                // --- FIN DE ELIMINACIÓN ---
-               
-
+            
                 // --- NUEVO CÓDIGO ---
                 // Enviamos la "intención" de patear al servidor
                 socket.emit('playerKicked', {
@@ -1526,7 +1517,7 @@ socket.on('goalUpdate', (data) => {
 
             isBallInKickArea() {
                 const MAX_KICK_DISTANCE = 3;
-                const KICK_CONE_ANGLE_RAD = Math.PI / 3;
+                const KICK_CONE_ANGLE_RAD = Math.PI;
                 const MIN_KICK_DOT = Math.cos(KICK_CONE_ANGLE_RAD);
 
                 const playerPos2D = new THREE.Vector2(this.playerBody.position.x, this.playerBody.position.z);
