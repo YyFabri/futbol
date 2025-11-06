@@ -156,7 +156,8 @@ function initializeRoomState() {
             score: { blue: 0, red: 0 },
             kickoffActive: true,
             currentKickoffTeam: 'red',
-            goalScoredRecently: false
+            goalScoredRecently: false,
+            isBallOutOfBounds: false // <--- AÑADE ESTA LÍNEA
         },
         world: world,
         ballBody: ballBody,
@@ -332,8 +333,10 @@ function gameLoop(roomCode) {
     // 1. Avanzar la física
     room.world.step(1 / 60); // 60 FPS
 
-    // 2. Lógica de Detección de Gol (sin cambios)
-    if (!room.gameState.goalScoredRecently) {
+    // 2. Lógica de Detección de Gol y Fuera de Banda
+    // --- NUEVO ---
+    // Solo chequear si no se está reseteando por gol O por fuera de banda
+    if (!room.gameState.goalScoredRecently && !room.gameState.isBallOutOfBounds) {
         const bx = room.ballBody.position.x;
         const by = room.ballBody.position.y;
         const bz = room.ballBody.position.z;
@@ -341,14 +344,20 @@ function gameLoop(roomCode) {
         const halfFieldLength = 45;
         const halfGoalWidth = 6;
         const goalHeight = 4;
+        const halfFieldWidth = 25; // <--- NUEVO --- (Límite lateral)
+        
         let scoringTeam = null;
+
+        // Lógica de Gol (sin cambios)
         if ((bz - r) > halfFieldLength && Math.abs(bx) + r < halfGoalWidth && (by - r) < goalHeight) {
             scoringTeam = 'blue';
         }
         if ((bz + r) < -halfFieldLength && Math.abs(bx) + r < halfGoalWidth && (by - r) < goalHeight) {
             scoringTeam = 'red';
         }
+
         if (scoringTeam) {
+            // Manejo de Gol (sin cambios)
             room.gameState.goalScoredRecently = true;
             if (scoringTeam === 'blue') {
                 room.gameState.score.blue++;
@@ -371,15 +380,33 @@ function gameLoop(roomCode) {
                     room.gameState.goalScoredRecently = false;
                 }
             }, 3000);
+
+        // --- INICIO DE LA LÓGICA DE FUERA DE BANDA ---
+        } else if (Math.abs(bx) - r > halfFieldWidth || Math.abs(bz) - r > halfFieldLength) {
+            // Si no fue gol, pero está fuera de los límites laterales (X) O de fondo (Z)...
+            
+            room.gameState.isBallOutOfBounds = true; // Activar el flag
+            
+            // Esperar 2 segundos para resetear
+            setTimeout(() => {
+                if (activeRooms[roomCode]) { // Comprobar si la sala aún existe
+                    // Poner la pelota en el centro y ARRIBA (para que caiga)
+                    room.ballBody.position.set(0, 5, 0); // y=5 está en el aire
+                    room.ballBody.velocity.set(0, 0, 0);
+                    room.ballBody.angularVelocity.set(0, 0, 0);
+                    
+                    // Quitar el flag para reanudar el juego
+                    room.gameState.isBallOutOfBounds = false;
+                }
+            }, 2000); // 2 segundos
         }
+        // --- FIN DE LA LÓGICA DE FUERA DE BANDA ---
     }
 
-    // 3. Retransmitir el estado autoritativo
-    // --- ¡¡MODIFICACIÓN!! ---
-    // Ahora también enviamos el 'quaternion' (rotación)
+    // 3. Retransmitir el estado autoritativo (sin cambios)
     io.to(roomCode).emit('ballSync', {
         position: room.ballBody.position,
-        quaternion: room.ballBody.quaternion // <--- AÑADE ESTA LÍNEA
+        quaternion: room.ballBody.quaternion 
     });
 }
 

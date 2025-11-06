@@ -843,51 +843,49 @@ socket.on('goalUpdate', (data) => {
                 label.style.color = team === 'blue' ? '#3b82f6' : '#ef4444';
                 document.getElementById('overlay').appendChild(label);
 
-                // --- INICIO: AÑADIR CUERPO FÍSICO ---
                 const playerShape = new CANNON.Sphere(radius);
                 const otherPlayerBody = new CANNON.Body({
-                    mass: 0, // Cuerpo estático. Su posición la dicta el servidor.
+                    mass: 0, 
                     shape: playerShape,
-                    collisionFilterGroup: GROUP_PLAYER, // Es un jugador
-                    // Debe colisionar con nuestro jugador y la pelota
+                    collisionFilterGroup: GROUP_PLAYER, 
                     collisionFilterMask: GROUP_PLAYER | GROUP_BALL | GROUP_GROUND | GROUP_WALL | GROUP_NET 
                 });
                 this.world.addBody(otherPlayerBody);
-                // --- FIN: AÑADIR CUERPO FÍSICO ---
+
+                // startPos es la posición del BODY (físico), Y = 0.5
+                const startPos = this.getStartPosition(team, position);
 
                 this.otherPlayers[playerId] = {
                     mesh: playerMesh,
-                    body: otherPlayerBody, // Almacenamos el cuerpo físico
+                    body: otherPlayerBody,
                     label: label,
-                    targetPosition: this.getStartPosition(team, position),
+                    targetPosition: startPos, // El target es la posición del body (Y=0.5)
                     targetRotation: 0
                 };
 
-                const startPos = this.getStartPosition(team, position);
-                playerMesh.position.copy(startPos);
-                
-                // Sincronizamos el cuerpo físico con la posición inicial
-                // (restamos 0.4 de 'y' para compensar el offset visual de la cápsula)
-                otherPlayerBody.position.copy(startPos);
-                otherPlayerBody.position.y -= 0.4;
-            }
+                // Sincronizar el cuerpo FÍSICO
+                otherPlayerBody.position.copy(startPos); // body.y = 0.5
 
+                // Sincronizar la malla VISUAL (con el offset)
+                playerMesh.position.copy(startPos);
+                playerMesh.position.y += 0.4; // mesh.y = 0.9
+            }
 
             getStartPosition(team, position) {
                 const positions = {
                     blue: {
-                        'gk': { x: 0, y: 1.4, z: -40 },
-                        'def-left': { x: -8, y: 1.4, z: -25 },
-                        'def-right': { x: 8, y: 1.4, z: -25 },
-                        'fwd-left': { x: -8, y: 1.4, z: -10 },
-                        'fwd-right': { x: 8, y: 1.4, z: -10 }
+                        'gk': { x: 0, y: 0.5, z: -40 },
+                        'def-left': { x: -8, y: 0.5, z: -25 },
+                        'def-right': { x: 8, y: 0.5, z: -25 },
+                        'fwd-left': { x: -8, y: 0.5, z: -10 },
+                        'fwd-right': { x: 8, y: 0.5, z: -10 }
                     },
                     red: {
-                        'gk': { x: 0, y: 1.4, z: 40 },
-                        'def-left': { x: -8, y: 1.4, z: 25 },
-                        'def-right': { x: 8, y: 1.4, z: 25 },
-                        'fwd-left': { x: -8, y: 1.4, z: 10 },
-                        'fwd-right': { x: 8, y: 1.4, z: 10 }
+                        'gk': { x: 0, y: 0.5, z: 40 },
+                        'def-left': { x: -8, y: 0.5, z: 25 },
+                        'def-right': { x: 8, y: 0.5, z: 25 },
+                        'fwd-left': { x: -8, y: 0.5, z: 10 },
+                        'fwd-right': { x: 8, y: 0.5, z: 10 }
                     }
                 };
                 return new THREE.Vector3(
@@ -896,6 +894,7 @@ socket.on('goalUpdate', (data) => {
                     positions[team][position].z
                 );
             }
+
 
             removeOtherPlayer(playerId) {
                 const player = this.otherPlayers[playerId];
@@ -1275,7 +1274,8 @@ socket.on('goalUpdate', (data) => {
                 
                 this.playerBody.velocity.set(0, 0, 0);
                 this.playerBody.angularVelocity.set(0, 0, 0);
-                this.playerBody.position.set(pos.x, 0.5 + 0.1, pos.z);
+                // Ajustado a 0.5 exacto
+                this.playerBody.position.set(pos.x, 0.5, pos.z); 
                 
                 const playerColor = team === 'blue' ? 0x3b82f6 : 0xef4444;
                 this.playerMesh.material.color.setHex(playerColor);
@@ -1285,6 +1285,7 @@ socket.on('goalUpdate', (data) => {
                 
                 this.updateCamera();
             }
+
 
             setPlayerKickoffCollision(isKickoff) {
                 if (isKickoff) {
@@ -1500,7 +1501,7 @@ socket.on('goalUpdate', (data) => {
                 const powerCurve = Math.pow(chargeRatio, 1.7);
                 const isPass = this.kickButton === 2;
                
-                const BASE_POWER = 15;
+                const BASE_POWER = 10;
                 const MAX_POWER_BOOST = 20;
                 const power = BASE_POWER + (MAX_POWER_BOOST * powerCurve);
                
@@ -1521,7 +1522,7 @@ socket.on('goalUpdate', (data) => {
                     if (Math.abs(this.swerveAccumX) > 5 || Math.abs(this.swerveAccumY) > 5) {
                         const MAX_SWERVE = 300;
                         const SWERVE_POWER = 0.08;
-                        const LIFT_POWER = 0.08;
+                        const LIFT_POWER = 0.09;
 
                         const swerveX = Math.sign(this.swerveAccumX) *
                           Math.min(Math.abs(this.swerveAccumX), MAX_SWERVE);
@@ -1563,7 +1564,7 @@ socket.on('goalUpdate', (data) => {
 
             isBallInKickArea() {
                 const MAX_KICK_DISTANCE = 3;
-                const KICK_CONE_ANGLE_RAD = Math.PI;
+                const KICK_CONE_ANGLE_RAD = Math.PI / 1.9;
                 const MIN_KICK_DOT = Math.cos(KICK_CONE_ANGLE_RAD);
 
                 const playerPos2D = new THREE.Vector2(this.playerBody.position.x, this.playerBody.position.z);
@@ -1748,7 +1749,7 @@ socket.on('goalUpdate', (data) => {
                             room: currentRoomCode,
                             position: {
                                 x: this.playerBody.position.x,
-                                y: this.playerBody.position.y,
+                                y: this.playerBody.position.y, // Aquí se envía 0.5 (correcto)
                                 z: this.playerBody.position.z
                             },
                             rotation: this.cameraOrbit.yaw,
@@ -1765,23 +1766,29 @@ socket.on('goalUpdate', (data) => {
                     this.updateCamera();
                 }
                 
+                // --- INICIO DE LA CORRECCIÓN ---
                 // Actualiza la posición y labels de otros jugadores
                 for (const playerId in this.otherPlayers) {
                     const player = this.otherPlayers[playerId];
                     if (player.targetPosition) {
-                        // 1. Interpolar la malla VISUAL como antes
-                        player.mesh.position.lerp(player.targetPosition, 0.2);
+                        
+                        // player.targetPosition es la posición del BODY (ej: y=0.5)
+                        // Calculamos la posición objetivo de la MESH (visual)
+                        const visualTargetPos = player.targetPosition.clone();
+                        visualTargetPos.y += 0.4; // (ej: y=0.9)
+
+                        // 1. Interpolar la malla VISUAL hacia el objetivo visual (y=0.9)
+                        player.mesh.position.lerp(visualTargetPos, 0.2);
                         player.mesh.rotation.y = player.targetRotation;
 
-                        // 2. Sincronizar el cuerpo FÍSICO (estático) con la malla visual
-                        //    Restamos 0.4y para compensar el offset visual de la cápsula
+                        // 2. Sincronizar el cuerpo FÍSICO (estático) con la malla visual interpolada
                         player.body.position.copy(player.mesh.position);
-                        player.body.position.y -= 0.4;
+                        player.body.position.y -= 0.4; // (ej: 0.9 -> 0.5)
                     }
                     
                     // La lógica del label sigue usando la malla (mesh)
                     const screenPos = player.mesh.position.clone();
-                    screenPos.y += 1.5;
+                    screenPos.y += 1.5; // Offset para que el label esté sobre la cabeza
                     screenPos.project(this.camera);
                     
                     const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
@@ -1795,22 +1802,19 @@ socket.on('goalUpdate', (data) => {
                         player.label.style.display = 'none';
                     }
                 }
+                // --- FIN DE LA CORRECCIÓN ---
                 
-                // Sincroniza SOLO la malla del jugador con su cuerpo físico
+                // Sincroniza SOLO la malla del jugador local
                 this.syncPhysicsToVisuals();
 
-                // --- INICIO: CÓDIGO NUEVO PARA LA PELOTA ---
-                
-                // 1. INTERPOLACIÓN (Suavizado)
-                const interpolationFactor = 0.3; // Puedes ajustar este valor
+                // --- CÓDIGO DE LA PELOTA (sin cambios) ---
+                const interpolationFactor = 0.3; 
                 this.ballMesh.position.lerp(this.serverBallState.position, interpolationFactor);
                 this.ballMesh.quaternion.slerp(this.serverBallState.quaternion, interpolationFactor);
                 
-                // 2. ACTUALIZACIÓN DEL "FANTASMA"
                 this.ballBody.position.copy(this.ballMesh.position);
                 this.ballBody.quaternion.copy(this.ballMesh.quaternion);
-                
-                // --- FIN: CÓDIGO NUEVO PARA LA PELOTA ---
+                // --- FIN CÓDIGO DE LA PELOTA ---
 
                 this.renderer.render(this.scene, this.camera);
             }
