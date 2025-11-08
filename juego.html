@@ -356,6 +356,7 @@
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
         }
 
+        /* --- (CAMBIO 2) CSS DEL NICKNAME ACTUALIZADO --- */
         .player-label {
             position: fixed;
             color: white;
@@ -364,7 +365,7 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
             pointer-events: none;
             white-space: nowrap;
-            background: rgba(0,0,0,0.5);
+            /* background: rgba(0,0,0,0.5); <-- Línea eliminada */
             padding: 4px 8px;
             border-radius: 4px;
             transform: translate(-50%, -50%);
@@ -1031,31 +1032,8 @@ socket.on('goalUpdate', (data) => {
                     this.collidableObjects.push(wallMesh);
                 });
 
-                const ceilingHeight = this.goalHeight;
-                const ceilingThickness = 0.5;
-                const fieldCenterLength = length - (this.goalDepth * 2);
-                const sideCeilingWidth = (width - goalWidth) / 2;
-                
-                const ceilings = [
-                    { x: 0, z: 0, w: width, d: fieldCenterLength },
-                    { x: -(width + goalWidth) / 4, z: length / 2, w: sideCeilingWidth, d: this.goalDepth },
-                    { x: (width + goalWidth) / 4, z: length / 2, w: sideCeilingWidth, d: this.goalDepth },
-                    { x: -(width + goalWidth) / 4, z: -length / 2, w: sideCeilingWidth, d: this.goalDepth },
-                    { x: (width + goalWidth) / 4, z: -length / 2, w: sideCeilingWidth, d: this.goalDepth }
-                ];
-
-                ceilings.forEach(ceiling => {
-                    const shape = new CANNON.Box(new CANNON.Vec3(ceiling.w / 2, ceilingThickness / 2, ceiling.d / 2));
-                    const body = new CANNON.Body({
-                        mass: 0,
-                        material: wallMat,
-                        collisionFilterGroup: GROUP_WALL,
-                        collisionFilterMask: GROUP_BALL
-                    });
-                    body.addShape(shape);
-                    body.position.set(ceiling.x, ceilingHeight, ceiling.z);
-                    this.world.addBody(body);
-                });
+                // --- (CAMBIO 1) SECCIÓN DE TECHOS ELIMINADA ---
+                // Ya no se crean los techos en el cliente.
             }
            
             createGoals(fieldLength) {
@@ -1563,7 +1541,7 @@ socket.on('goalUpdate', (data) => {
 
 
             isBallInKickArea() {
-                const MAX_KICK_DISTANCE = 3;
+                const MAX_KICK_DISTANCE = 2;
                 const KICK_CONE_ANGLE_RAD = Math.PI / 1.9;
                 const MIN_KICK_DOT = Math.cos(KICK_CONE_ANGLE_RAD);
 
@@ -1589,7 +1567,9 @@ socket.on('goalUpdate', (data) => {
                
                 this.isOnGround = this.playerBody.position.y <= 1.05;
 
-                const isSprinting = this.keys['shift'] && this.stamina > 0 && this.canSprint;
+                // --- (CAMBIO 3) CORRECCIÓN DEL SPRINT ---
+                // Se añadió "&& this.isOnGround" para evitar esprintar en el aire.
+                const isSprinting = this.keys['shift'] && this.stamina > 0 && this.canSprint && this.isOnGround;
                 const speed = isSprinting ? this.sprintSpeed : this.playerSpeed;
                
                 if (isSprinting && (this.keys['w'] || this.keys['a'] || this.keys['s'] || this.keys['d'])) {

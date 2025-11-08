@@ -121,30 +121,9 @@ function initializeRoomState() {
         body.position.set(wall.x, wallHeight / 2, wall.z);
         world.addBody(body);
     });
-    // Techos (Copiado de createWalls)
-    const ceilingHeight = goalHeight;
-    const ceilingThickness = 0.5;
-    const fieldCenterLength = fieldLength - (goalDepth * 2);
-    const sideCeilingWidth = (fieldWidth - goalWidth) / 2;
-    const ceilings = [
-        { x: 0, z: 0, w: fieldWidth, d: fieldCenterLength },
-        { x: -(fieldWidth + goalWidth) / 4, z: fieldLength / 2, w: sideCeilingWidth, d: goalDepth },
-        { x: (fieldWidth + goalWidth) / 4, z: fieldLength / 2, w: sideCeilingWidth, d: goalDepth },
-        { x: -(fieldWidth + goalWidth) / 4, z: -fieldLength / 2, w: sideCeilingWidth, d: goalDepth },
-        { x: (fieldWidth + goalWidth) / 4, z: -fieldLength / 2, w: sideCeilingWidth, d: goalDepth }
-    ];
-    ceilings.forEach(ceiling => {
-        const shape = new CANNON.Box(new CANNON.Vec3(ceiling.w / 2, ceilingThickness / 2, ceiling.d / 2));
-        const body = new CANNON.Body({ 
-            mass: 0, 
-            material: wallMat,
-            collisionFilterGroup: GROUP_WALL,
-            collisionFilterMask: GROUP_BALL // Techos solo con pelota
-        });
-        body.addShape(shape);
-        body.position.set(ceiling.x, ceilingHeight, ceiling.z);
-        world.addBody(body);
-    });
+    
+    // --- (CAMBIO 1) SECCIÓN DE TECHOS ELIMINADA ---
+    // Ya no se crean los techos en el mundo físico del servidor.
 
     // --- AÑADIR REDES DE PORTERÍA (Copiado de createGoals) ---
     const netMat = new CANNON.Material({ friction: 0.1, restitution: 0.1 });
@@ -518,8 +497,9 @@ function gameLoop(roomCode) {
             // Esperar 2 segundos para resetear
             setTimeout(() => {
                 if (activeRooms[roomCode]) { // Comprobar si la sala aún existe
-                    // Poner la pelota en el centro y ARRIBA (para que caiga)
-                    room.ballBody.position.set(0, 5, 0); // y=5 está en el aire
+                    
+                    // --- (CAMBIO 2) Poner la pelota en el centro SOBRE EL SUELO ---
+                    room.ballBody.position.set(0, 0.32, 0); // y=0.32 (en el suelo)
                     room.ballBody.velocity.set(0, 0, 0);
                     room.ballBody.angularVelocity.set(0, 0, 0);
                     
