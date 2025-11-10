@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 });
 
 // --- 4. Almacenamiento de salas ---
-const activeRooms = {};
+const activeRooms = {}; // <--- El nombre correcto es "activeRooms"
 
 // Función para generar un código de 4 letras
 function generateRoomCode() {
@@ -362,44 +362,50 @@ io.on('connection', (socket) => {
         }
     });
 
-    // --- AÑADE EL NUEVO 'playerKicked' ---
+    // --- ¡BLOQUE CORREGIDO! ---
     socket.on('playerKicked', (data) => {
-    const room = rooms[data.room];
-    if (!room || !room.ballBody) return;
+        // CORRECCIÓN: Usar "activeRooms"
+        const room = activeRooms[data.room]; 
+        if (room && room.ballBody) {
+            
+            // Lógica de kickoff (opcional, si el saque está activo)
+            if (room.gameState.kickoffActive) {
+                const player = room.players[socket.id];
+                if (player && player.team === room.gameState.currentKickoffTeam) {
+                    room.gameState.kickoffActive = false;
+                    // Notificar a todos que el saque terminó
+                    io.to(data.room).emit('kickoffComplete'); 
+                } else {
+                    // Si patea el equipo incorrecto durante el saque, no hacer nada
+                    return; 
+                }
+            }
 
-    // --- ¡ESTA ES LA PARTE IMPORTANTE! ---
-    
-    // 1. Aplicar el impulso (la fuerza)
-    room.ballBody.applyImpulse(
-        new CANNON.Vec3(data.impulse.x, data.impulse.y, data.impulse.z),
-        room.ballBody.position 
-    );
-
-    // 2. Aplicar la velocidad angular (el efecto/spin)
-    room.ballBody.angularVelocity.set(
-        data.angularVelocity.x,
-        data.angularVelocity.y,
-        data.angularVelocity.z
-    );
-    
-    // -------------------------------------
-
-    // Opcional: reiniciar el kickoff si fue el primer toque
-    if (room.kickoffActive) {
-        const player = room.players[socket.id];
-        if (player && player.team === room.currentKickoffTeam) {
-            room.kickoffActive = false;
-            io.to(data.room).emit('kickoffComplete');
+            // Aplicar la patada en la física del SERVIDOR
+            
+            // CORRECCIÓN: Líneas setZero() eliminadas para un tiro más fluido
+            
+            // Simplemente aplica el impulso que llega del cliente
+            const impulseVec = new CANNON.Vec3(data.impulse.x, data.impulse.y, data.impulse.z);
+            room.ballBody.applyImpulse(impulseVec, room.ballBody.position);
+            
+            // Establece el nuevo efecto (spin) que llega del cliente
+            if (data.angularVelocity) {
+                const angularVec = new CANNON.Vec3(data.angularVelocity.x, data.angularVelocity.y, data.angularVelocity.z);
+                room.ballBody.angularVelocity.copy(angularVec);
+            }
         }
-    }
-});
-
+    });
+    // --- FIN DEL BLOQUE CORREGIDO ---
     
 
-    // Saque inicial
+    // Saque inicial (Este evento ahora es manejado por 'playerKicked')
+    // Puedes dejarlo o comentarlo. 'playerKicked' ahora maneja el kickoff.
     socket.on('kickoffTaken', (data) => {
         const room = activeRooms[data.room];
-        if (room) {
+        if (room && room.gameState.kickoffActive) {
+            // Este es un fallback por si 'playerKicked' falla
+            console.log("Fallback 'kickoffTaken' activado");
             room.gameState.kickoffActive = false;
             io.to(data.room).emit('kickoffComplete');
         }
