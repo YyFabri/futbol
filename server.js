@@ -78,8 +78,8 @@ function initializeRoomState() {
     const ballBody = new CANNON.Body({
         mass: 0.43,
         shape: ballShape,
-        linearDamping: 0.6,
-        angularDamping: 0.2,
+        linearDamping: 0.1,
+        angularDamping: 0.1,
         material: new CANNON.Material({ friction: 0.2, restitution: 0.8 }),
         collisionFilterGroup: GROUP_BALL, // Es la pelota
         collisionFilterMask: GROUP_EVERYTHING // Colisiona con todo
@@ -307,6 +307,7 @@ io.on('connection', (socket) => {
             collisionFilterGroup: GROUP_PLAYER,
             collisionFilterMask: GROUP_EVERYTHING
         });
+        playerBody.socketId = socket.id;
 
         // Obtener la posición inicial del servidor
         const startPos = getStartPosition(data.team, data.position);
@@ -450,6 +451,42 @@ function gameLoop(roomCode) {
 
     // 1. Avanzar la física
     room.world.step(1 / 60); // 60 FPS
+
+
+    if (room.gameState.kickoffActive) {
+        // Iterar sobre todos los contactos físicos que ocurrieron en este frame
+        for (const contact of room.world.contacts) {
+            const bodyA = contact.bi;
+            const bodyB = contact.bj;
+
+            let playerBody = null;
+            
+            // Identificar si la colisión es entre la pelota y un jugador
+            if (bodyA === room.ballBody && bodyB.collisionFilterGroup === GROUP_PLAYER) {
+                playerBody = bodyB;
+            } else if (bodyB === room.ballBody && bodyA.collisionFilterGroup === GROUP_PLAYER) {
+                playerBody = bodyA;
+            }
+
+            // Si hay colisión pelota-jugador Y tenemos la info del socket adjunta
+            if (playerBody && playerBody.socketId) {
+                const playerInfo = room.players[playerBody.socketId];
+                
+                // Si el jugador que tocó es del equipo que saca
+                if (playerInfo && playerInfo.team === room.gameState.currentKickoffTeam) {
+                    
+                    // ¡Saque completado!
+                    room.gameState.kickoffActive = false;
+                    
+                    // Notificar a todos los clientes
+                    io.to(roomCode).emit('kickoffComplete');
+                    
+                    // Salir del bucle de contactos, ya terminamos
+                    break;
+                }
+            }
+        }
+    }
 
     // 2. Lógica de Detección de Gol y Fuera de Banda
     // --- NUEVO ---
