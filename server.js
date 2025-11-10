@@ -364,25 +364,35 @@ io.on('connection', (socket) => {
 
     // --- AÑADE EL NUEVO 'playerKicked' ---
     socket.on('playerKicked', (data) => {
-        const room = activeRooms[data.room];
-        if (room && room.ballBody) {
-            
-            // Aquí puedes añadir tu lógica de kickoff si quieres
-            // if (room.gameState.kickoffActive && ...) { ... }
+    const room = rooms[data.room];
+    if (!room || !room.ballBody) return;
 
-            // Aplicar la patada en la física del SERVIDOR
-            room.ballBody.velocity.setZero();
-            room.ballBody.angularVelocity.setZero();
-            
-            const impulseVec = new CANNON.Vec3(data.impulse.x, data.impulse.y, data.impulse.z);
-            room.ballBody.applyImpulse(impulseVec, room.ballBody.position);
-            
-            if (data.angularVelocity) {
-                const angularVec = new CANNON.Vec3(data.angularVelocity.x, data.angularVelocity.y, data.angularVelocity.z);
-                room.ballBody.angularVelocity.copy(angularVec);
-            }
+    // --- ¡ESTA ES LA PARTE IMPORTANTE! ---
+    
+    // 1. Aplicar el impulso (la fuerza)
+    room.ballBody.applyImpulse(
+        new CANNON.Vec3(data.impulse.x, data.impulse.y, data.impulse.z),
+        room.ballBody.position 
+    );
+
+    // 2. Aplicar la velocidad angular (el efecto/spin)
+    room.ballBody.angularVelocity.set(
+        data.angularVelocity.x,
+        data.angularVelocity.y,
+        data.angularVelocity.z
+    );
+    
+    // -------------------------------------
+
+    // Opcional: reiniciar el kickoff si fue el primer toque
+    if (room.kickoffActive) {
+        const player = room.players[socket.id];
+        if (player && player.team === room.currentKickoffTeam) {
+            room.kickoffActive = false;
+            io.to(data.room).emit('kickoffComplete');
         }
-    });
+    }
+});
 
     
 

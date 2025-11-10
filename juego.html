@@ -1458,7 +1458,11 @@ socket.on('goalUpdate', (data) => {
                 document.addEventListener('contextmenu', (e) => e.preventDefault());
             }
 
-            // REEMPLAZA ESTA FUNCIÓN
+            // ===================================================================
+            // ===== ¡INICIO DE LA FUNCIÓN DE TIRO ACTUALIZADA! =====
+            // ===================================================================
+            
+            // REEMPLAZA ESTA FUNCIÓN COMPLETA
             executeKick() {
                 if (!this.isBallInKickArea()) {
                     this.isCharging = false;
@@ -1479,71 +1483,92 @@ socket.on('goalUpdate', (data) => {
                     }
                 }
                
-                // Esta lógica de cálculo se mantiene
+                // 1. CÁLCULO DE POTENCIA
                 const chargeRatio = Math.min(this.chargeTime / this.maxChargeTime, 1);
-                const powerCurve = Math.pow(chargeRatio, 1.7);
-                const isPass = this.kickButton === 2;
+                // Usamos una curva más suave (pow 1.5) para que la potencia media sea más útil
+                const powerCurve = Math.pow(chargeRatio, 1.5);
+                const isPass = this.kickButton === 2; // Click derecho
                
-                const BASE_POWER = 10;
-                const MAX_POWER_BOOST = 20;
+                // Ajustamos la potencia base y máxima para tiros y pases
+                const BASE_POWER = isPass ? 8 : 12;
+                const MAX_POWER_BOOST = isPass ? 10 : 22; // Los tiros tienen mucho más rango
                 const power = BASE_POWER + (MAX_POWER_BOOST * powerCurve);
                
-                const kickDir = new THREE.Vector3(
-                    -Math.sin(this.cameraOrbit.yaw),
-                    -Math.tan(this.cameraOrbit.pitch) * 0.1,
-                    -Math.cos(this.cameraOrbit.yaw)
-                );
-                
-                let angularVel = { x: 0, y: 0, z: 0 }; // Objeto para la velocidad angular
-               
-                if (isPass) {
-                    kickDir.y = 0.1;
-                    kickDir.normalize().multiplyScalar(power * 0.6);
-                } else {
-                    kickDir.normalize().multiplyScalar(power);
-                   
-                    if (Math.abs(this.swerveAccumX) > 5 || Math.abs(this.swerveAccumY) > 5) {
-                        const MAX_SWERVE = 300;
-                        const SWERVE_POWER = 0.12;
-                        const LIFT_POWER = 0.09;
+                // 2. CÁLCULO DE DIRECCIÓN (¡LA MEJORA CLAVE!)
+                // Obtenemos la dirección exacta a la que apunta la cámara
+                const kickDir = new THREE.Vector3();
+                this.camera.getWorldDirection(kickDir); 
+                // ¡Ya no limitamos la altura! Ahora respetará tu mira.
 
-                        const swerveX = Math.sign(this.swerveAccumX) *
-                          Math.min(Math.abs(this.swerveAccumX), MAX_SWERVE);
-                        const swerveY = Math.sign(this.swerveAccumY) *
-                          Math.min(Math.abs(this.swerveAccumY), MAX_SWERVE);
-                       
-                        const right = new THREE.Vector3(-kickDir.z, 0, kickDir.x).normalize();
-                        const sideForce = right.multiplyScalar(swerveX * SWERVE_POWER * powerCurve);
-                       
-                        const liftForce = new THREE.Vector3(0, 1, 0)
-                            .multiplyScalar(-swerveY * LIFT_POWER * powerCurve);
-                       
-                        kickDir.add(sideForce).add(liftForce);
-                        
-                        // Guardamos la velocidad angular
-                        angularVel = {
-                            x: this.swerveAccumY * 0.1,
-                            y: this.swerveAccumX * 0.1,
-                            z: 0
-                        };
+                // 3. LÓGICA DE PASE
+                if (isPass) {
+                    // Si es un pase y no estás apuntando muy alto, lo forzamos a ser raso
+                    if (kickDir.y < 0.3) {
+                         kickDir.y = 0.05; // Un ligero levantamiento para que no se clave en el pasto
                     }
+                    kickDir.normalize();
+                } else {
+                    // Para tiros, simplemente normalizamos la dirección de la cámara
+                    kickDir.normalize();
                 }
-               
-            
-                // --- NUEVO CÓDIGO ---
-                // Enviamos la "intención" de patear al servidor
+
+                // 4. CÁLCULO DE IMPULSO FINAL
+                // Este es el vector de fuerza puro.
+                const finalImpulse = kickDir.multiplyScalar(power);
+
+                // 5. CÁLCULO DE EFECTO (SWERVE/LIFT) (¡LA SEGUNDA MEJORA CLAVE!)
+                let finalAngularVel = new THREE.Vector3(0, 0, 0);
+                
+                // Solo aplicamos efecto si no es un pase y si hubo movimiento de mouse
+                if (!isPass && (Math.abs(this.swerveAccumX) > 5 || Math.abs(this.swerveAccumY) > 5)) {
+                    
+                    const MAX_SWERVE_ACCUM = 250; // Límite de cuánto efecto puedes acumular
+                    const SWERVE_POWER = 0.22;    // Qué tanto gira hacia los lados
+                    const LIFT_POWER = 0.18;      // Qué tanto sube o baja (topspin/backspin)
+
+                    // Limitamos el efecto acumulado
+                    const swerveX = Math.sign(this.swerveAccumX) *
+                      Math.min(Math.abs(this.swerveAccumX), MAX_SWERVE_ACCUM);
+                    const swerveY = Math.sign(this.swerveAccumY) *
+                      Math.min(Math.abs(this.swerveAccumY), MAX_SWERVE_ACCUM);
+                   
+                    // Calculamos los ejes de rotación RELATIVOS a la dirección del tiro
+                    const forward = new THREE.Vector3().copy(finalImpulse).normalize();
+                    // El eje "derecha" (para el topspin/lift)
+                    const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), forward).normalize();
+                    // El eje "arriba" (para el sidespin/swerve)
+                    const up = new THREE.Vector3().crossVectors(forward, right).normalize();
+                    
+                    // Movimiento horizontal (swerveX) aplica spin alrededor del eje 'up'
+                    // (Mouse izq -> swerveX negativo -> spin en Y negativo -> curva a la izq)
+                    const sideSpin = up.multiplyScalar(-swerveX * SWERVE_POWER * powerCurve);
+                    
+                    // Movimiento vertical (swerveY) aplica spin alrededor del eje 'right'
+                    // (Mouse arriba -> swerveY negativo -> spin en X positivo -> "lift" o "knuckle")
+                    // (Mouse abajo -> swerveY positivo -> spin en X negativo -> "topspin" o "dipping")
+                    const liftSpin = right.multiplyScalar(-swerveY * LIFT_POWER * powerCurve);
+
+                    // Combinamos ambos spins en el vector de velocidad angular final
+                    finalAngularVel.add(sideSpin).add(liftSpin);
+                }
+
+                // 6. EMITIR AL SERVIDOR
+                // Enviamos el impulso PURO y la velocidad angular PURA.
+                // Tu server.js ahora recibirá esto y deberá aplicarlo al ballBody.
                 socket.emit('playerKicked', {
                     room: currentRoomCode,
-                    impulse: { x: kickDir.x, y: kickDir.y, z: kickDir.z },
-                    angularVelocity: angularVel // Enviamos el objeto de vel. angular
+                    impulse: { x: finalImpulse.x, y: finalImpulse.y, z: finalImpulse.z },
+                    angularVelocity: { x: finalAngularVel.x, y: finalAngularVel.y, z: finalAngularVel.z }
                 });
-                // --- FIN DE NUEVO CÓDIGO ---
                
                 this.isCharging = false;
                 this.powerMeter.style.display = 'none';
             }
+            
+            // ===================================================================
+            // ===== ¡FIN DE LA FUNCIÓN DE TIRO ACTUALIZADA! =====
+            // ===================================================================
 
-//a
 
             isBallInKickArea() {
                 const MAX_KICK_DISTANCE = 2.3;
