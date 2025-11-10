@@ -998,6 +998,9 @@ socket.on('goalUpdate', (data) => {
                 const goalWidth = 12;
                 const wallMat = new CANNON.Material({ friction: 0.1, restitution: 0.9 });
 
+                const wallThickness = 4; // <--- Nuevo
+                const halfThickness = wallThickness / 2;
+
                 const sideSegmentWidth = (width - goalWidth) / 2;
                 const leftSegmentCenterX = -(width + goalWidth) / 4;
                 const rightSegmentCenterX = (width + goalWidth) / 4;
@@ -1201,6 +1204,8 @@ socket.on('goalUpdate', (data) => {
                     collisionFilterMask: GROUP_EVERYTHING
                 });
                 this.ballBody.position.set(0, this.ballRadius + 0.1, 0);
+                this.ballBody.ccdSpeedThreshold = 80;
+                this.ballBody.ccdSweptSphereRadius = 0.22;  
                 
             }
             

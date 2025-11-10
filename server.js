@@ -85,6 +85,8 @@ function initializeRoomState() {
         collisionFilterMask: GROUP_EVERYTHING // Colisiona con todo
     });
     ballBody.position.set(0, 0.32, 0);
+    ballBody.ccdSpeedThreshold = 80; // Si la pelota va a +80 m/s, activa CCD
+    ballBody.ccdSweptSphereRadius = 0.22; // Debe ser igual al radio de la pelota (ballRadius)
     world.addBody(ballBody);
 
     // --- AÑADIR SUELO ---
@@ -450,7 +452,7 @@ function gameLoop(roomCode) {
     if (!room) return;
 
     // 1. Avanzar la física
-    room.world.step(1 / 60); // 60 FPS
+    room.world.step(1 / 60, 1 / 60, 10); // 60 FPS
 
 
     if (room.gameState.kickoffActive) {
