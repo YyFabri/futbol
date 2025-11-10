@@ -663,7 +663,7 @@
                 this.raycaster = new THREE.Raycaster();
                 this.collidableObjects = [];
 
-                this.worldGravity = -9.82;
+                this.worldGravity = -10.82;
                 this.playerGravity = -25;
 
                 this.world = new CANNON.World();
@@ -1434,14 +1434,14 @@ socket.on('goalUpdate', (data) => {
                 document.addEventListener('mousedown', (e) => {
                     if (!this.gameStarted) return;
                     e.preventDefault();
-                    if (this.isBallInKickArea()) {
-                        this.isCharging = true; 
-                        this.chargeTime = 0; 
-                        this.kickButton = e.button;
-                        this.swerveAccumX = 0; 
-                        this.swerveAccumY = 0; 
-                        this.powerMeter.style.display = 'block';
-                    }
+                    
+                    // EL "IF" FUE ELIMINADO. Ahora la carga SIEMPRE empieza.
+                    this.isCharging = true; 
+                    this.chargeTime = 0; 
+                    this.kickButton = e.button;
+                    this.swerveAccumX = 0; 
+                    this.swerveAccumY = 0; 
+                    this.powerMeter.style.display = 'block';
                 });
                 
                 document.addEventListener('mouseup', (e) => {
@@ -1493,13 +1493,13 @@ socket.on('goalUpdate', (data) => {
                
                 if (isPass) {
                     kickDir.y = 0.1;
-                    kickDir.normalize().multiplyScalar(power * 0.4);
+                    kickDir.normalize().multiplyScalar(power * 0.6);
                 } else {
                     kickDir.normalize().multiplyScalar(power);
                    
                     if (Math.abs(this.swerveAccumX) > 5 || Math.abs(this.swerveAccumY) > 5) {
                         const MAX_SWERVE = 300;
-                        const SWERVE_POWER = 0.08;
+                        const SWERVE_POWER = 0.12;
                         const LIFT_POWER = 0.09;
 
                         const swerveX = Math.sign(this.swerveAccumX) *
@@ -1541,7 +1541,7 @@ socket.on('goalUpdate', (data) => {
 
 
             isBallInKickArea() {
-                const MAX_KICK_DISTANCE = 2;
+                const MAX_KICK_DISTANCE = 2.3;
                 const KICK_CONE_ANGLE_RAD = Math.PI / 1.9;
                 const MIN_KICK_DOT = Math.cos(KICK_CONE_ANGLE_RAD);
 
@@ -1788,7 +1788,7 @@ socket.on('goalUpdate', (data) => {
                 this.syncPhysicsToVisuals();
 
                 // --- CÓDIGO DE LA PELOTA (sin cambios) ---
-                const interpolationFactor = 0.3; 
+                const interpolationFactor = 0.5; 
                 this.ballMesh.position.lerp(this.serverBallState.position, interpolationFactor);
                 this.ballMesh.quaternion.slerp(this.serverBallState.quaternion, interpolationFactor);
                 
