@@ -483,7 +483,7 @@ function gameLoop(roomCode) {
                     
                     // Salir del bucle de contactos, ya terminamos
                     break;
-                }
+                }//a
             }
         }
     }
