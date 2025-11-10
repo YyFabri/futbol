@@ -1,17 +1,23 @@
 {
-  "name": "truco",
+  "name": "futbol-game",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Juego de fútbol multijugador online",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "socket.io",
+    "express",
+    "cannon-es",
+    "three.js"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cannon-es": "^0.20.0",
-    "express": "^5.1.0",
-    "socket.io": "^4.8.1"
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
   }
 }

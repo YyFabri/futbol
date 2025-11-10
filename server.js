@@ -7,6 +7,17 @@ const path = require('path');
 const { Server } = require("socket.io");
 const CANNON = require('cannon-es');
 
+const GROUP_PLAYER = 1;
+const GROUP_BALL = 2;
+const GROUP_GROUND = 4;
+const GROUP_WALL = 8;
+const GROUP_GOAL = 16;
+const GROUP_NET = 32;
+// Definir "EVERYTHING" para que coincida con el cliente
+const GROUP_EVERYTHING = GROUP_PLAYER | GROUP_BALL | GROUP_GROUND | GROUP_WALL | GROUP_GOAL | GROUP_NET;
+
+
+
 // --- 2. Configuración inicial ---
 const app = express();
 const server = http.createServer(app);
