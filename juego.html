@@ -133,6 +133,12 @@
         .position-btn[data-team="red"] {
             border-color: #ef4444;
         }
+        
+        /* --- CAMBIO: Estilos para botón "seleccionado" --- */
+        .position-btn.my-position {
+            border-color: #22c55e !important; /* Verde */
+            box-shadow: 0 0 20px #22c55e;
+        }
 
         .position-btn:hover:not(:disabled) {
             transform: scale(1.1);
@@ -594,56 +600,39 @@
             lobbyError.style.display = 'block';
         });
 
+        // --- CAMBIO: LISTENER 'roomState' ACTUALIZADO ---
         socket.on('roomState', (state) => {
             console.log('Estado de la sala recibido:', state);
 
-            // --- INICIO DE LA CORRECCIÓN PARA LATE-JOINERS ---
-
-            // 1. Sincronizar el marcador
+            // --- INICIO: Sincronización para Late-Joiners ---
             if (state.gameState && state.gameState.score) {
-                this.score = state.gameState.score;
-                this.updateScore(); // Llama a la función que actualiza el HTML
+                game.score = state.gameState.score;
+                game.updateScore(); // Llama a la función que actualiza el HTML
             }
 
-            // 2. Sincronizar el estado del saque (kickoff)
             if (state.gameState) {
-                this.kickoffActive = state.gameState.kickoffActive;
-                this.currentKickoffTeam = state.gameState.currentKickoffTeam;
+                game.kickoffActive = state.gameState.kickoffActive;
+                game.currentKickoffTeam = state.gameState.currentKickoffTeam;
 
                 // Si el saque SÍ está activo al unirse, mostrar el indicador
-                if (this.kickoffActive) {
-                    this.showKickIndicator(`¡Saque ${this.currentKickoffTeam === 'blue' ? 'Azul' : 'Rojo'}!`);
-                    this.setPlayerKickoffCollision(true);
+                if (game.kickoffActive) {
+                    game.showKickIndicator(`¡Saque ${game.currentKickoffTeam === 'blue' ? 'Azul' : 'Rojo'}!`);
+                    game.setPlayerKickoffCollision(true);
                 } else {
                     // Si el saque NO está activo, asegurarse de que el jugador pueda moverse
-                    this.setPlayerKickoffCollision(false);
+                    game.setPlayerKickoffCollision(false);
                 }
             }
-            // --- FIN DE LA CORRECCIÓN ---
-            
-            // Resetear todos los botones primero
-            document.querySelectorAll('.position-btn').forEach(btn => {
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.style.cursor = 'pointer';
-            });
-            
-            // Marcar posiciones ocupadas
-            for (const team in state.occupiedPositions) {
-                for (const pos in state.occupiedPositions[team]) {
-                    if (state.occupiedPositions[team][pos]) {
-                        const btn = document.querySelector(`.position-btn[data-team="${team}"][data-position="${pos}"]`);
-                        if (btn) {
-                            btn.disabled = true;
-                            btn.style.opacity = '0.5';
-                            btn.style.cursor = 'not-allowed';
-                        }
-                    }
-                }
+            // --- FIN: Sincronización para Late-Joiners ---
+
+            // --- INICIO: Lógica de botones (delegada) ---
+            // Llama a la nueva función para actualizar los botones
+            if (state.occupiedPositions && state.players) {
+                game.updatePositionButtons(state.occupiedPositions, state.players);
             }
+            // --- FIN: Lógica de botones ---
         });
 
-        
 
         socket.on('positionOccupied', (message) => {
             alert(message);
@@ -734,11 +723,11 @@
                 this.mouseMovementY = 0;
                 this.swerveAccumX = 0;
                 this.swerveAccumY = 0;
-
-                this.kickCooldown = 0; // Tiempo restante del cooldown
-                this.kickDelay = 0.7;  // 0.3 segundos de espera
-
                 
+                // --- CAMBIO: Cooldown de Tiro ---
+                this.kickCooldown = 0; // Tiempo restante del cooldown
+                this.kickDelay = 0.3;  // 0.3 segundos de espera
+               
                 this.hud = document.getElementById('hud');
                 this.scoreDisplay = document.getElementById('score');
                 this.staminaFill = document.getElementById('stamina-fill');
@@ -790,9 +779,7 @@
                     }
                 });
 
-                // REEMPLAZA ESTE LISTENER en juego.html
                 socket.on('ballSync', (data) => {
-                    // Solo almacenamos el estado autoritativo del servidor
                     if (data.position) {
                         this.serverBallState.position.copy(data.position);
                     }
@@ -801,11 +788,8 @@
                     }
                 });
 
-           
-
-socket.on('goalUpdate', (data) => {
+                socket.on('goalUpdate', (data) => {
                     let scoringTeam = 'blue';
-                    // Determinamos quién anotó comparando el score nuevo con el viejo
                     if (data.score.red > this.score.red) {
                         scoringTeam = 'red';
                     }
@@ -814,14 +798,10 @@ socket.on('goalUpdate', (data) => {
                     this.currentKickoffTeam = data.currentKickoffTeam;
                     this.updateScore();
 
-                    // --- INICIO DE LA SOLUCIÓN ---
-                    // 1. Mostrar el mensaje de "Gol" a TODOS
                     const message = scoringTeam === 'blue' ? "¡Gol del equipo Azul!" : "¡Gol del equipo Rojo!";
                     this.showKickIndicator(message);
 
-                    // 2. Llamar al reseteo para TODOS
                     this.resetBall(); 
-                    // --- FIN DE LA SOLUCIÓN ---
                 });
 
                 socket.on('kickoffComplete', () => {
@@ -835,19 +815,68 @@ socket.on('goalUpdate', (data) => {
 
                 socket.on('playerPositionChanged', (data) => {
                     if (data.playerId === socket.id) {
-                        // Es mi propio cambio, no necesito hacer nada
                         return;
                     }
 
-                    // Si el jugador ya existe, actualizamos su nick/color
                     if (this.otherPlayers[data.playerId]) {
                         const playerColor = data.team === 'blue' ? 0x3b82f6 : 0xef4444;
                         this.otherPlayers[data.playerId].mesh.material.color.setHex(playerColor);
                         this.otherPlayers[data.playerId].label.textContent = data.nickname;
                         this.otherPlayers[data.playerId].label.style.color = data.team === 'blue' ? '#3b82f6' : '#ef4444';
                     } else {
-                        // Si es un jugador nuevo que no teníamos, lo creamos
                         this.createOtherPlayer(data.playerId, data.team, data.position, data.nickname);
+                    }
+                });
+                
+                // --- CAMBIO: NUEVO LISTENER para botones ---
+                // Se activa CADA VEZ que alguien se une, cambia o sale
+                socket.on('occupancyUpdate', (data) => {
+                    console.log('Ocupación actualizada:', data);
+                    if (data.occupiedPositions && data.players) {
+                        this.updatePositionButtons(data.occupiedPositions, data.players);
+                    }
+                });
+            }
+
+            // --- CAMBIO: NUEVA FUNCIÓN para actualizar botones ---
+            updatePositionButtons(occupiedPositions, players) {
+                // 1. Encontrar la posición actual de ESTE cliente
+                let myCurrentPos = null;
+                if (players && players[socket.id]) {
+                    myCurrentPos = players[socket.id];
+                }
+
+                // 2. Iterar y actualizar todos los botones
+                document.querySelectorAll('.position-btn').forEach(btn => {
+                    const team = btn.dataset.team;
+                    const pos = btn.dataset.position;
+
+                    // Comprobar si esta posición está en el mapa de ocupación
+                    const isOccupied = occupiedPositions[team] && occupiedPositions[team][pos];
+                    let isMyPos = false;
+                    
+                    if (myCurrentPos && myCurrentPos.team === team && myCurrentPos.position === pos) {
+                        isMyPos = true;
+                    }
+
+                    // Resetear estilo por defecto (habilitado)
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    btn.style.borderColor = ''; // Quitar borde especial
+                    btn.classList.remove('my-position'); // Quitar clase especial
+
+                    if (isMyPos) {
+                        // Es MI posición actual
+                        btn.disabled = true; // No puedo seleccionarla
+                        btn.style.opacity = '1';
+                        btn.classList.add('my-position'); // Añadir clase para borde verde
+                        btn.style.cursor = 'default';
+                    } else if (isOccupied) {
+                        // Ocupada por OTRO jugador
+                        btn.disabled = true;
+                        btn.style.opacity = '0.3';
+                        btn.style.cursor = 'not-allowed';
                     }
                 });
             }
@@ -879,27 +908,25 @@ socket.on('goalUpdate', (data) => {
                     mass: 0, 
                     shape: playerShape,
                     collisionFilterGroup: GROUP_PLAYER, 
-                    collisionFilterMask: GROUP_PLAYER | GROUP_BALL | GROUP_GROUND | GROUP_WALL | GROUP_NET 
+                    
+                    // --- CAMBIO: SIN COLISIÓN CON PELOTA ---
+                    collisionFilterMask: GROUP_PLAYER | GROUP_GROUND | GROUP_WALL | GROUP_NET 
                 });
                 this.world.addBody(otherPlayerBody);
 
-                // startPos es la posición del BODY (físico), Y = 0.5
                 const startPos = this.getStartPosition(team, position);
 
                 this.otherPlayers[playerId] = {
                     mesh: playerMesh,
                     body: otherPlayerBody,
                     label: label,
-                    targetPosition: startPos, // El target es la posición del body (Y=0.5)
+                    targetPosition: startPos,
                     targetRotation: 0
                 };
 
-                // Sincronizar el cuerpo FÍSICO
-                otherPlayerBody.position.copy(startPos); // body.y = 0.5
-
-                // Sincronizar la malla VISUAL (con el offset)
+                otherPlayerBody.position.copy(startPos);
                 playerMesh.position.copy(startPos);
-                playerMesh.position.y += 0.4; // mesh.y = 0.9
+                playerMesh.position.y += 0.4;
             }
 
             getStartPosition(team, position) {
@@ -931,7 +958,7 @@ socket.on('goalUpdate', (data) => {
                 const player = this.otherPlayers[playerId];
                 if (player) {
                     this.scene.remove(player.mesh);
-                    this.world.removeBody(player.body); // Eliminar el cuerpo físico del mundo
+                    this.world.removeBody(player.body);
                     player.label.remove();
                     delete this.otherPlayers[playerId];
                 }
@@ -1026,9 +1053,9 @@ socket.on('goalUpdate', (data) => {
             createWalls(width, length) {
                 const wallHeight = 20;
                 const goalWidth = 12;
-                const wallMat = new CANNON.Material({ friction: 0.1, restitution: 0.9 });
+                const wallMat = new CANNON.Material({ friction: 0.1, restitution: 0.6 }); // <-- CAMBIO: Rebote
 
-                const wallThickness = 4; // <--- Nuevo
+                const wallThickness = 4;
                 const halfThickness = wallThickness / 2;
 
                 const sideSegmentWidth = (width - goalWidth) / 2;
@@ -1064,9 +1091,6 @@ socket.on('goalUpdate', (data) => {
                     this.scene.add(wallMesh);
                     this.collidableObjects.push(wallMesh);
                 });
-
-                // --- (CAMBIO 1) SECCIÓN DE TECHOS ELIMINADA ---
-                // Ya no se crean los techos en el cliente.
             }
            
             createGoals(fieldLength) {
@@ -1136,7 +1160,6 @@ socket.on('goalUpdate', (data) => {
                 const identifierWidth = 15;
                 const identifierDepth = 0.5;
                 
-                // IDENTIFICADOR AZUL (físico)
                 const blueGeo = new THREE.BoxGeometry(identifierWidth, identifierHeight, identifierDepth);
                 const blueMat = new THREE.MeshStandardMaterial({ 
                     color: 0x3b82f6, 
@@ -1151,7 +1174,6 @@ socket.on('goalUpdate', (data) => {
                 this.scene.add(blueIdentifier);
                 this.collidableObjects.push(blueIdentifier);
                 
-                // Crear cuerpo físico para el identificador azul
                 const blueShape = new CANNON.Box(new CANNON.Vec3(identifierWidth / 2, identifierHeight / 2, identifierDepth / 2));
                 const blueBody = new CANNON.Body({
                     mass: 0,
@@ -1162,7 +1184,6 @@ socket.on('goalUpdate', (data) => {
                 blueBody.position.set(0, identifierHeight / 2, -this.fieldLength / 2 - 1);
                 this.world.addBody(blueBody);
                 
-                // IDENTIFICADOR ROJO (físico)
                 const redMat = new THREE.MeshStandardMaterial({ 
                     color: 0xef4444, 
                     emissive: 0xef4444, 
@@ -1176,7 +1197,6 @@ socket.on('goalUpdate', (data) => {
                 this.scene.add(redIdentifier);
                 this.collidableObjects.push(redIdentifier);
                 
-                // Crear cuerpo físico para el identificador rojo
                 const redShape = new CANNON.Box(new CANNON.Vec3(identifierWidth / 2, identifierHeight / 2, identifierDepth / 2));
                 const redBody = new CANNON.Body({
                     mass: 0,
@@ -1196,52 +1216,48 @@ socket.on('goalUpdate', (data) => {
                 this.ballMesh.receiveShadow = true;
                 this.scene.add(this.ballMesh);
 
-                // --- INICIO: AÑADIR GLOW AMARILLO ---
                 const glowMatInner = new THREE.MeshBasicMaterial({
-                    color: 0xfbbf24, // Amarillo brillante
+                    color: 0xfbbf24,
                     transparent: true,
                     opacity: 0.5,
-                    depthTest: false, // Renderizar a través de todo
+                    depthTest: false,
                     depthWrite: false
                 });
-                const glowGeoInner = new THREE.SphereGeometry(this.ballRadius * 1.3, 32, 32); // 30% más grande
+                const glowGeoInner = new THREE.SphereGeometry(this.ballRadius * 1.3, 32, 32);
                 this.ballGlowMeshInner = new THREE.Mesh(glowGeoInner, glowMatInner);
-                this.ballMesh.add(this.ballGlowMeshInner); // Añadir como hijo
+                this.ballMesh.add(this.ballGlowMeshInner);
 
                 const glowMatOuter = new THREE.MeshBasicMaterial({
-                    color: 0xf59e0b, // Naranja/amarillo
+                    color: 0xf59e0b,
                     transparent: true,
                     opacity: 0.3,
-                    depthTest: false, // Renderizar a través de todo
+                    depthTest: false,
                     depthWrite: false
                 });
-                const glowGeoOuter = new THREE.SphereGeometry(this.ballRadius * 1.8, 32, 32); // 80% más grande
+                const glowGeoOuter = new THREE.SphereGeometry(this.ballRadius * 1.8, 32, 32);
                 this.ballGlowMeshOuter = new THREE.Mesh(glowGeoOuter, glowMatOuter);
-                this.ballMesh.add(this.ballGlowMeshOuter); // Añadir como hijo
-                // --- FIN: AÑADIR GLOW ---
+                this.ballMesh.add(this.ballGlowMeshOuter);
                
                 const ballShape = new CANNON.Sphere(this.ballRadius);
                 this.ballBody = new CANNON.Body({
                     mass: 0.43,
                     shape: ballShape,
-                    linearDamping: 0.6,
-                    angularDamping: 0.2,
+                    linearDamping: 0.6, // (Fricción cliente, menos importante que el server)
+                    angularDamping: 0.5, // (Fricción cliente, menos importante que el server)
                     material: new CANNON.Material({
                         friction: 0.2,
-                        restitution: 0.8
+                        restitution: 0.6 // (Rebote cliente)
                     }),
                     collisionFilterGroup: GROUP_BALL,
-                    collisionFilterMask: GROUP_EVERYTHING
+                    
+                    // --- CAMBIO: SIN COLISIÓN CON JUGADOR ---
+                    collisionFilterMask: GROUP_BALL | GROUP_GROUND | GROUP_WALL | GROUP_GOAL | GROUP_NET
                 });
                 this.ballBody.position.set(0, this.ballRadius + 0.1, 0);
-                this.ballBody.ccdSpeedThreshold = 80;
+                this.ballBody.ccdSpeedThreshold = 10; // <-- CAMBIO: Evita "Tunneling"
                 this.ballBody.ccdSweptSphereRadius = 0.22;  
-                
             }
             
-
-
-
             createPlayer() {
                 const radius = 0.5; const height = 1.8;
                 const playerGeo = new THREE.CapsuleGeometry(radius, height - radius * 2, 16, 16);
@@ -1260,6 +1276,9 @@ socket.on('goalUpdate', (data) => {
                     fixedRotation: true,
                     material: new CANNON.Material({ friction: 0.1, restitution: 0.1 }),
                     collisionFilterGroup: GROUP_PLAYER,
+                    
+                    // --- CAMBIO: SIN COLISIÓN CON PELOTA ---
+                    collisionFilterMask: GROUP_PLAYER | GROUP_GROUND | GROUP_WALL | GROUP_GOAL | GROUP_NET
                 });
                 this.playerBody.position.set(0, radius + 0.5, -20);
                 this.world.addBody(this.playerBody);
@@ -1287,7 +1306,6 @@ socket.on('goalUpdate', (data) => {
                 
                 this.playerBody.velocity.set(0, 0, 0);
                 this.playerBody.angularVelocity.set(0, 0, 0);
-                // Ajustado a 0.5 exacto
                 this.playerBody.position.set(pos.x, 0.5, pos.z); 
                 
                 const playerColor = team === 'blue' ? 0x3b82f6 : 0xef4444;
@@ -1299,14 +1317,14 @@ socket.on('goalUpdate', (data) => {
                 this.updateCamera();
             }
 
-
+            // --- CAMBIO: SIN COLISIÓN CON PELOTA ---
             setPlayerKickoffCollision(isKickoff) {
                 if (isKickoff) {
-                    // Permitir coliiones con jugadores incluso durante el saque
+                    // Ya no se añade GROUP_BALL
                     this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_NET | GROUP_PLAYER;
                 } else {
-                    // Permitir colisiones con jugadores y la pelota
-                    this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_BALL | GROUP_NET | GROUP_PLAYER;
+                    // Ya no se añade GROUP_BALL
+                    this.playerBody.collisionFilterMask = GROUP_GROUND | GROUP_WALL | GROUP_NET | GROUP_PLAYER;
                 }
             }
            
@@ -1355,7 +1373,6 @@ socket.on('goalUpdate', (data) => {
                     teamSelectScreen.style.display = 'block';
                     if (roomCodeBadge) roomCodeBadge.style.display = 'none';
                     
-                    // Solicitar el estado actualizado de la sala al servidor
                     socket.emit('requestRoomState', currentRoomCode);
                 });
                 
@@ -1407,8 +1424,8 @@ socket.on('goalUpdate', (data) => {
                         
                         if (this.playerPosition === 'gk') {
                             // --- LÓGICA DE ARQUERO ---
-                            const DIVE_HORIZONTAL_IMPULSE = 800; // Puedes ajustar esta fuerza
-                            const DIVE_VERTICAL_IMPULSE = 600;   // Cuánto salta hacia arriba
+                            const DIVE_HORIZONTAL_IMPULSE = 800;
+                            const DIVE_VERTICAL_IMPULSE = 600; 
                             
                             let diveDirection = 0;
                             if (this.keys['a']) {
@@ -1418,25 +1435,18 @@ socket.on('goalUpdate', (data) => {
                             }
 
                             if (diveDirection !== 0) {
-                                // Calculamos el vector "derecha" de la cámara
                                 const yaw = this.cameraOrbit.yaw;
                                 const rightVec = new THREE.Vector3(-Math.sin(yaw - Math.PI / 2), 0, -Math.cos(yaw - Math.PI / 2));
-                                
-                                // Aplicamos el impulso horizontal
                                 const horizontalImpulse = rightVec.multiplyScalar(diveDirection * DIVE_HORIZONTAL_IMPULSE);
-                                
                                 const impulse = new CANNON.Vec3(
                                     horizontalImpulse.x,
                                     DIVE_VERTICAL_IMPULSE,
                                     horizontalImpulse.z
                                 );
-                                
-                                // Usamos applyImpulse para un "empujón" instantáneo
                                 this.playerBody.applyImpulse(impulse, this.playerBody.position);
                                 this.isOnGround = false;
 
                             } else {
-                                // Si solo presiona Espacio (sin A o D), salta normal
                                 this.playerBody.velocity.y = 10; 
                                 this.isOnGround = false;
                             }
@@ -1470,7 +1480,6 @@ socket.on('goalUpdate', (data) => {
                     if (!this.gameStarted) return;
                     e.preventDefault();
                     
-                    // EL "IF" FUE ELIMINADO. Ahora la carga SIEMPRE empieza.
                     this.isCharging = true; 
                     this.chargeTime = 0; 
                     this.kickButton = e.button;
@@ -1499,14 +1508,13 @@ socket.on('goalUpdate', (data) => {
                 const powerCurve = Math.pow(chargeRatio, 1.5);
                 const isPass = this.kickButton === 2; // Click derecho
 
-                // --- INICIO DE LA CORRECCIÓN (COOLDOWN) ---
-                // Si NO es un pase (es click izq) Y el cooldown está activo
+                // --- INICIO: COOLDOWN (de la vez pasada) ---
                 if (!isPass && this.kickCooldown > 0) {
                     this.isCharging = false;
                     this.powerMeter.style.display = 'none';
                     return; // Salir, no permitir el tiro
                 }
-                // --- FIN DE LA CORRECCIÓN ---
+                // --- FIN: COOLDOWN ---
 
                 if (!this.isBallInKickArea()) {
                     this.isCharging = false;
@@ -1527,61 +1535,85 @@ socket.on('goalUpdate', (data) => {
                     }
                 }
                
-                // Ajustamos la potencia base y máxima (CON CORRECCIONES PREVIAS)
-                const BASE_POWER = isPass ? 6 : 12; // Pase (clic-der) más suave
-                const MAX_POWER_BOOST = isPass ? 8 : 22; // Pase (clic-der) más suave
+                // Potencia (con correcciones de pase suave)
+                const BASE_POWER = isPass ? 6 : 12;
+                const MAX_POWER_BOOST = isPass ? 8 : 22; 
                 const power = BASE_POWER + (MAX_POWER_BOOST * powerCurve);
                
                 // 2. CÁLCULO DE DIRECCIÓN
                 const kickDir = new THREE.Vector3();
-                this.camera.getWorldDirection(kickDir); 
+                this.camera.getWorldDirection(kickDir); // Default para TIRO (Click Izq)
 
-                // 3. LÓGICA DE PASE
+                // 3. LÓGICA DE PASE (Y NUEVA DIRECCIÓN)
                 if (isPass) {
-                    // Si es un pase y no estás apuntando muy alto, lo forzamos a ser raso
-                    if (kickDir.y < 0.3) {
-                         kickDir.y = 0.05; // Un ligero levantamiento para que no se clave en el pasto
+                    
+                    // --- INICIO: LÓGICA DE PASE DIRECCIONAL (NUEVO) ---
+                    const passMoveDir = new THREE.Vector3();
+                    if (this.keys['w']) passMoveDir.z += 1;
+                    if (this.keys['s']) passMoveDir.z -= 1;
+                    if (this.keys['a']) passMoveDir.x -= 1;
+                    if (this.keys['d']) passMoveDir.x += 1;
+
+                    const yaw = this.cameraOrbit.yaw;
+                    const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+                    const right = new THREE.Vector3(-Math.sin(yaw - Math.PI / 2), 0, -Math.cos(yaw - Math.PI / 2));
+
+                    if (passMoveDir.lengthSq() > 0) {
+                        passMoveDir.normalize();
+                        // Calcular la dirección final del pase relativa a la cámara
+                        kickDir.set(0, 0, 0); // Resetear kickDir
+                        kickDir.addScaledVector(forward, passMoveDir.z);
+                        kickDir.addScaledVector(right, passMoveDir.x);
+                    } else {
+                        // Si no se presiona nada, el pase va hacia adelante (como 'w')
+                        kickDir.copy(forward);
                     }
+                    
+                    // Forzar el pase a ser raso (casi)
+                    kickDir.y = 0.05; 
                     kickDir.normalize();
+                    // --- FIN: LÓGICA DE PASE DIRECCIONAL ---
+
                 } else {
-                    // Para tiros, simplemente normalizamos la dirección de la cámara
+                    // Para tiros (Click Izq), simplemente normalizamos la dirección de la cámara
                     kickDir.normalize();
                 }
 
                 // 4. CÁLCULO DE IMPULSO FINAL
-                // Este es el vector de fuerza puro.
                 const finalImpulse = kickDir.multiplyScalar(power);
 
                 // 5. CÁLCULO DE EFECTO (SWERVE/LIFT)
                 let finalAngularVel = new THREE.Vector3(0, 0, 0);
                 
-                // Solo aplicamos efecto si no es un pase y si hubo movimiento de mouse
                 if (!isPass && (Math.abs(this.swerveAccumX) > 5 || Math.abs(this.swerveAccumY) > 5)) {
                     
-                    const MAX_SWERVE_ACCUM = 250; // Límite de cuánto efecto puedes acumular
-                    const SWERVE_POWER = 0.22;    // Qué tanto gira hacia los lados
-                    const LIFT_POWER = 0.22;      // (CON CORRECCIÓN PREVIA)
+                    const MAX_SWERVE_ACCUM = 250; 
+                    const SWERVE_POWER = 0.22;
+                    const LIFT_POWER = 0.22; // (Potencia de lift)
 
-                    // Limitamos el efecto acumulado
+                    // --- INICIO: AJUSTE DE CURVA DE LIFT (NUEVO) ---
+                    
+                    // Lógica de Side-Spin (X) - Lineal
                     const swerveX = Math.sign(this.swerveAccumX) *
                       Math.min(Math.abs(this.swerveAccumX), MAX_SWERVE_ACCUM);
-                    const swerveY = Math.sign(this.swerveAccumY) *
-                      Math.min(Math.abs(this.swerveAccumY), MAX_SWERVE_ACCUM);
+                    
+                    // Lógica de Lift-Spin (Y) - No-Lineal
+                    const liftRatio = Math.min(Math.abs(this.swerveAccumY), MAX_SWERVE_ACCUM) / MAX_SWERVE_ACCUM;
+                    // Aplicamos una curva (potencia < 1) para más sensibilidad en movimientos pequeños
+                    const curvedLiftRatio = Math.pow(liftRatio, 0.75); 
+                    const swerveY = Math.sign(this.swerveAccumY) * curvedLiftRatio * MAX_SWERVE_ACCUM;
+                    
+                    // --- FIN: AJUSTE DE CURVA DE LIFT ---
                    
-                    // Calculamos los ejes de rotación RELATIVOS a la dirección del tiro
+                    // Calculamos los ejes de rotación RELATIVOS
                     const forward = new THREE.Vector3().copy(finalImpulse).normalize();
-                    // El eje "derecha" (para el topspin/lift)
                     const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), forward).normalize();
-                    // El eje "arriba" (para el sidespin/swerve)
                     const up = new THREE.Vector3().crossVectors(forward, right).normalize();
                     
-                    // Movimiento horizontal (swerveX) aplica spin alrededor del eje 'up'
+                    // Aplicar spin usando las nuevas variables
                     const sideSpin = up.multiplyScalar(-swerveX * SWERVE_POWER * powerCurve);
-                    
-                    // Movimiento vertical (swerveY) aplica spin alrededor del eje 'right'
                     const liftSpin = right.multiplyScalar(-swerveY * LIFT_POWER * powerCurve);
 
-                    // Combinamos ambos spins en el vector de velocidad angular final
                     finalAngularVel.add(sideSpin).add(liftSpin);
                 }
 
@@ -1592,12 +1624,11 @@ socket.on('goalUpdate', (data) => {
                     angularVelocity: { x: finalAngularVel.x, y: finalAngularVel.y, z: finalAngularVel.z }
                 });
 
-                // --- INICIO DE LA CORRECCIÓN (COOLDOWN) ---
-                // Si NO fue un pase (fue click izq), activar el cooldown
+                // --- INICIO: COOLDOWN (de la vez pasada) ---
                 if (!isPass) {
                     this.kickCooldown = this.kickDelay;
                 }
-                // --- FIN DE LA CORRECCIÓN ---
+                // --- FIN: COOLDOWN ---
                
                 this.isCharging = false;
                 this.powerMeter.style.display = 'none';
@@ -1609,8 +1640,9 @@ socket.on('goalUpdate', (data) => {
 
 
             isBallInKickArea() {
-                const MAX_KICK_DISTANCE = 1.5;
-                const KICK_CONE_ANGLE_RAD = Math.PI;
+                // (Valores originales del archivo que subiste)
+                const MAX_KICK_DISTANCE = 2.3;
+                const KICK_CONE_ANGLE_RAD = Math.PI / 1.9;
                 const MIN_KICK_DOT = Math.cos(KICK_CONE_ANGLE_RAD);
 
                 const playerPos2D = new THREE.Vector2(this.playerBody.position.x, this.playerBody.position.z);
@@ -1635,8 +1667,6 @@ socket.on('goalUpdate', (data) => {
                
                 this.isOnGround = this.playerBody.position.y <= 1.05;
 
-                // --- (CAMBIO 3) CORRECCIÓN DEL SPRINT ---
-                // Se añadió "&& this.isOnGround" para evitar esprintar en el aire.
                 const isSprinting = this.keys['shift'] && this.stamina > 0 && this.canSprint && this.isOnGround;
                 const speed = isSprinting ? this.sprintSpeed : this.playerSpeed;
                
@@ -1730,12 +1760,9 @@ socket.on('goalUpdate', (data) => {
             }
            
             syncPhysicsToVisuals() {
-                // Solo actualiza al jugador
                 this.playerMesh.position.copy(this.playerBody.position);
                 this.playerMesh.position.y += 0.4;
                 this.playerMesh.rotation.y = this.cameraOrbit.yaw;
-                
-                // Las líneas de 'this.ballMesh' se eliminaron de aquí
             }
            
             resetBall() {
@@ -1751,10 +1778,12 @@ socket.on('goalUpdate', (data) => {
                     this.ballBody.velocity.set(0, 0, 0);
                     this.ballBody.angularVelocity.set(0, 0, 0);
 
-                    const resetZ = this.playerTeam === 'blue' ? -20 : 20;
-                    this.playerBody.position.set(0, 0.5 + 0.1, resetZ);
-                    this.playerBody.velocity.set(0, 0, 0);
-                    this.playerBody.angularVelocity.set(0, 0, 0);
+                    // --- CAMBIO: No resetear la posición del jugador, solo la de la pelota ---
+                    // (El servidor ya no resetea a los jugadores, así que el cliente tampoco debe hacerlo)
+                    // const resetZ = this.playerTeam === 'blue' ? -20 : 20;
+                    // this.playerBody.position.set(0, 0.5 + 0.1, resetZ);
+                    // this.playerBody.velocity.set(0, 0, 0);
+                    // this.playerBody.angularVelocity.set(0, 0, 0);
 
                     this.goalScoredRecently = false;
                 }, 3000);
@@ -1772,11 +1801,11 @@ socket.on('goalUpdate', (data) => {
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
             }
            
-            // PEGA ESTA FUNCIÓN COMPLETA en juego.html
             animate() {
                 requestAnimationFrame(() => this.animate());
                 const dt = Math.min(this.clock.getDelta(), 0.1);
-
+                
+                // --- CAMBIO: Actualizar Cooldown ---
                 if (this.kickCooldown > 0) {
                     this.kickCooldown -= dt;
                 }
@@ -1787,7 +1816,6 @@ socket.on('goalUpdate', (data) => {
                     this.playerBody.applyForce(extraForce, this.playerBody.position);
                 }
 
-                // El world.step() del cliente ahora simula al jugador Y sus colisiones
                 this.world.step(1/60, dt, 10); 
                 
                 if (this.gameStarted) {
@@ -1801,7 +1829,7 @@ socket.on('goalUpdate', (data) => {
                             room: currentRoomCode,
                             position: {
                                 x: this.playerBody.position.x,
-                                y: this.playerBody.position.y, // Aquí se envía 0.5 (correcto)
+                                y: this.playerBody.position.y,
                                 z: this.playerBody.position.z
                             },
                             rotation: this.cameraOrbit.yaw,
@@ -1818,29 +1846,22 @@ socket.on('goalUpdate', (data) => {
                     this.updateCamera();
                 }
                 
-                // --- INICIO DE LA CORRECCIÓN ---
-                // Actualiza la posición y labels de otros jugadores
                 for (const playerId in this.otherPlayers) {
                     const player = this.otherPlayers[playerId];
                     if (player.targetPosition) {
                         
-                        // player.targetPosition es la posición del BODY (ej: y=0.5)
-                        // Calculamos la posición objetivo de la MESH (visual)
                         const visualTargetPos = player.targetPosition.clone();
-                        visualTargetPos.y += 0.4; // (ej: y=0.9)
+                        visualTargetPos.y += 0.4; 
 
-                        // 1. Interpolar la malla VISUAL hacia el objetivo visual (y=0.9)
                         player.mesh.position.lerp(visualTargetPos, 0.2);
                         player.mesh.rotation.y = player.targetRotation;
 
-                        // 2. Sincronizar el cuerpo FÍSICO (estático) con la malla visual interpolada
                         player.body.position.copy(player.mesh.position);
-                        player.body.position.y -= 0.4; // (ej: 0.9 -> 0.5)
+                        player.body.position.y -= 0.4;
                     }
                     
-                    // La lógica del label sigue usando la malla (mesh)
                     const screenPos = player.mesh.position.clone();
-                    screenPos.y += 1.5; // Offset para que el label esté sobre la cabeza
+                    screenPos.y += 1.5; 
                     screenPos.project(this.camera);
                     
                     const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
@@ -1854,25 +1875,24 @@ socket.on('goalUpdate', (data) => {
                         player.label.style.display = 'none';
                     }
                 }
-                // --- FIN DE LA CORRECCIÓN ---
                 
-                // Sincroniza SOLO la malla del jugador local
                 this.syncPhysicsToVisuals();
 
-                // --- CÓDIGO DE LA PELOTA (sin cambios) ---
                 const interpolationFactor = 0.5; 
                 this.ballMesh.position.lerp(this.serverBallState.position, interpolationFactor);
                 this.ballMesh.quaternion.slerp(this.serverBallState.quaternion, interpolationFactor);
                 
                 this.ballBody.position.copy(this.ballMesh.position);
                 this.ballBody.quaternion.copy(this.ballMesh.quaternion);
-                // --- FIN CÓDIGO DE LA PELOTA ---
 
                 this.renderer.render(this.scene, this.camera);
             }
         }
        
-        new SoccerGame();
+        // --- CAMBIO: Exponer 'game' globalmente ---
+        // Se necesita para que el listener 'roomState' (que está fuera de la clase) pueda accederlo.
+        const game = new SoccerGame();
+        
     </script>
 </body>
 </html>
