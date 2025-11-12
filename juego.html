@@ -1589,7 +1589,7 @@
                     
                     const MAX_SWERVE_ACCUM = 250; 
                     const SWERVE_POWER = 0.22;
-                    const LIFT_POWER = 0.30; // (Potencia de lift)
+                    const LIFT_POWER = 0.22; // (Potencia de lift)
 
                     // --- INICIO: AJUSTE DE CURVA DE LIFT (NUEVO) ---
                     
@@ -1612,7 +1612,7 @@
                     
                     // Aplicar spin usando las nuevas variables
                     const sideSpin = up.multiplyScalar(-swerveX * SWERVE_POWER * powerCurve);
-                    const liftSpin = right.multiplyScalar(-swerveY * LIFT_POWER * powerCurve);
+                    const liftSpin = right.multiplyScalar(swerveY * LIFT_POWER * powerCurve);
 
                     finalAngularVel.add(sideSpin).add(liftSpin);
                 }
