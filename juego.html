@@ -726,7 +726,7 @@
                 
                 // --- CAMBIO: Cooldown de Tiro ---
                 this.kickCooldown = 0; // Tiempo restante del cooldown
-                this.kickDelay = 0.3;  // 0.3 segundos de espera
+                this.kickDelay = 0.7;  // 0.3 segundos de espera
                
                 this.hud = document.getElementById('hud');
                 this.scoreDisplay = document.getElementById('score');
@@ -1641,8 +1641,8 @@
 
             isBallInKickArea() {
                 // (Valores originales del archivo que subiste)
-                const MAX_KICK_DISTANCE = 2.3;
-                const KICK_CONE_ANGLE_RAD = Math.PI / 1.9;
+                const MAX_KICK_DISTANCE = 1.5;
+                const KICK_CONE_ANGLE_RAD = Math.PI;
                 const MIN_KICK_DOT = Math.cos(KICK_CONE_ANGLE_RAD);
 
                 const playerPos2D = new THREE.Vector2(this.playerBody.position.x, this.playerBody.position.z);
