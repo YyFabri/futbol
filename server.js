@@ -78,14 +78,16 @@ function initializeRoomState() {
     const ballBody = new CANNON.Body({
         mass: 0.43,
         shape: ballShape,
-        linearDamping: 0.7,
-        angularDamping: 0.5,
-        material: new CANNON.Material({ friction: 0.2, restitution: 0.6 }),
+        linearDamping: 0.7, // <-- CAMBIO: Fricción
+        angularDamping: 0.5, // <-- CAMBIO: Fricción
+        material: new CANNON.Material({ friction: 0.2, restitution: 0.6 }), // <-- CAMBIO: Rebote
         collisionFilterGroup: GROUP_BALL, // Es la pelota
-        collisionFilterMask: GROUP_BALL | GROUP_GROUND | GROUP_WALL | GROUP_GOAL | GROUP_NET // Colisiona con todo
+        
+        // --- CAMBIO: SIN COLISIÓN CON JUGADOR ---
+        collisionFilterMask: GROUP_BALL | GROUP_GROUND | GROUP_WALL | GROUP_GOAL | GROUP_NET 
     });
     ballBody.position.set(0, 0.32, 0);
-    ballBody.ccdSpeedThreshold = 10; // Si la pelota va a +80 m/s, activa CCD
+    ballBody.ccdSpeedThreshold = 10; // <-- CAMBIO: Evita "Tunneling"
     ballBody.ccdSweptSphereRadius = 0.22; // Debe ser igual al radio de la pelota (ballRadius)
     world.addBody(ballBody);
 
@@ -107,7 +109,7 @@ function initializeRoomState() {
     const goalHeight = 4;
     const wallHeight = 20;
     const goalWidth = 12;
-    const wallMat = new CANNON.Material({ friction: 0.1, restitution: 0.6 });
+    const wallMat = new CANNON.Material({ friction: 0.1, restitution: 0.6 }); // <-- CAMBIO: Rebote
     const sideSegmentWidth = (fieldWidth - goalWidth) / 2;
     const leftSegmentCenterX = -(fieldWidth + goalWidth) / 4;
     const rightSegmentCenterX = (fieldWidth + goalWidth) / 4;
@@ -250,9 +252,11 @@ io.on('connection', (socket) => {
         socket.join(roomCode);
         console.log(`Usuario ${socket.id} se unió a la sala ${roomCode}`);
         socket.emit('joinSuccess', roomCode);
+        
+        // --- CAMBIO: Enviar estado COMPLETO al unirse ---
         socket.emit('roomState', {
             occupiedPositions: room.occupiedPositions,
-            gameState: room.gameState,
+            gameState: room.gameState, // <-- Envía el estado del juego (score, kickoff)
             players: room.players
         });
     });
@@ -307,6 +311,8 @@ io.on('connection', (socket) => {
             mass: 0, // Kinemático/Estático: su posición es controlada por el cliente
             shape: playerShape,
             collisionFilterGroup: GROUP_PLAYER,
+            
+            // --- CAMBIO: SIN COLISIÓN CON PELOTA ---
             collisionFilterMask: GROUP_PLAYER | GROUP_GROUND | GROUP_WALL | GROUP_GOAL | GROUP_NET
         });
         playerBody.socketId = socket.id;
@@ -329,7 +335,13 @@ io.on('connection', (socket) => {
             nickname: data.nickname
         });
         
-        // Enviar estado de la sala y jugadores al jugador que se acaba de unir/cambiar
+        // --- CAMBIO: Notificar a TODOS del cambio de ocupación ---
+        io.to(data.room).emit('occupancyUpdate', {
+            occupiedPositions: room.occupiedPositions,
+            players: room.players 
+        });
+        
+        // (Opcional, 'occupancyUpdate' ya lo cubre) Enviar estado de la sala al jugador que se acaba de unir/cambiar
         socket.emit('roomState', {
              occupiedPositions: room.occupiedPositions,
              gameState: room.gameState,
@@ -364,7 +376,6 @@ io.on('connection', (socket) => {
 
     // --- ¡BLOQUE CORREGIDO! ---
     socket.on('playerKicked', (data) => {
-        // CORRECCIÓN: Usar "activeRooms"
         const room = activeRooms[data.room]; 
         if (room && room.ballBody) {
             
@@ -383,6 +394,7 @@ io.on('connection', (socket) => {
 
             // Aplicar la patada en la física del SERVIDOR
             
+            // --- CAMBIO: Reseteo para evitar "spam-click" ---
             room.ballBody.velocity.setZero();
             room.ballBody.angularVelocity.setZero();
             
@@ -416,9 +428,10 @@ io.on('connection', (socket) => {
     socket.on('requestRoomState', (roomCode) => {
         const room = activeRooms[roomCode];
         if (room) {
+            // --- CAMBIO: Enviar estado COMPLETO ---
             socket.emit('roomState', {
                 occupiedPositions: room.occupiedPositions,
-                gameState: room.gameState,
+                gameState: room.gameState, // <-- Envía el estado del juego (score, kickoff)
                 players: room.players
             });
         }
@@ -447,6 +460,12 @@ io.on('connection', (socket) => {
                 console.log(`Jugador ${socket.id} salió de la sala ${roomCode}`);
                 io.to(roomCode).emit('playerLeft', socket.id);
                 
+                // --- CAMBIO: Notificar a TODOS del cambio de ocupación ---
+                io.to(roomCode).emit('occupancyUpdate', {
+                    occupiedPositions: room.occupiedPositions,
+                    players: room.players
+                });
+
                 // Eliminar la sala si está vacía
                 if (Object.keys(room.players).length === 0) {
                     if (room.physicsInterval) {
@@ -472,40 +491,9 @@ function gameLoop(roomCode) {
     room.world.step(1 / 60, 1 / 60, 10); // 60 FPS
 
 
-    if (room.gameState.kickoffActive) {
-        // Iterar sobre todos los contactos físicos que ocurrieron en este frame
-        for (const contact of room.world.contacts) {
-            const bodyA = contact.bi;
-            const bodyB = contact.bj;
+    // --- Lógica de Kickoff eliminada de aquí ---
+    // (Ahora se maneja en 'playerKicked' para ser más responsivo)
 
-            let playerBody = null;
-            
-            // Identificar si la colisión es entre la pelota y un jugador
-            if (bodyA === room.ballBody && bodyB.collisionFilterGroup === GROUP_PLAYER) {
-                playerBody = bodyB;
-            } else if (bodyB === room.ballBody && bodyA.collisionFilterGroup === GROUP_PLAYER) {
-                playerBody = bodyA;
-            }
-
-            // Si hay colisión pelota-jugador Y tenemos la info del socket adjunta
-            if (playerBody && playerBody.socketId) {
-                const playerInfo = room.players[playerBody.socketId];
-                
-                // Si el jugador que tocó es del equipo que saca
-                if (playerInfo && playerInfo.team === room.gameState.currentKickoffTeam) {
-                    
-                    // ¡Saque completado!
-                    room.gameState.kickoffActive = false;
-                    
-                    // Notificar a todos los clientes
-                    io.to(roomCode).emit('kickoffComplete');
-                    
-                    // Salir del bucle de contactos, ya terminamos
-                    break;
-                }//a
-            }
-        }
-    }
 
     // 2. Lógica de Detección de Gol y Fuera de Banda
     // --- NUEVO ---
