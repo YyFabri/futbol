@@ -1490,8 +1490,8 @@ socket.on('goalUpdate', (data) => {
                 const isPass = this.kickButton === 2; // Click derecho
                
                 // Ajustamos la potencia base y máxima para tiros y pases
-                const BASE_POWER = isPass ? 8 : 12;
-                const MAX_POWER_BOOST = isPass ? 10 : 22; // Los tiros tienen mucho más rango
+                const BASE_POWER = isPass ? 6 : 12;
+                const MAX_POWER_BOOST = isPass ? 8 : 22; // Los tiros tienen mucho más rango
                 const power = BASE_POWER + (MAX_POWER_BOOST * powerCurve);
                
                 // 2. CÁLCULO DE DIRECCIÓN (¡LA MEJORA CLAVE!)
@@ -1524,7 +1524,7 @@ socket.on('goalUpdate', (data) => {
                     
                     const MAX_SWERVE_ACCUM = 250; // Límite de cuánto efecto puedes acumular
                     const SWERVE_POWER = 0.22;    // Qué tanto gira hacia los lados
-                    const LIFT_POWER = 0.18;      // Qué tanto sube o baja (topspin/backspin)
+                    const LIFT_POWER = 0.22;      // Qué tanto sube o baja (topspin/backspin)
 
                     // Limitamos el efecto acumulado
                     const swerveX = Math.sign(this.swerveAccumX) *
@@ -1571,8 +1571,8 @@ socket.on('goalUpdate', (data) => {
 
 
             isBallInKickArea() {
-                const MAX_KICK_DISTANCE = 2.3;
-                const KICK_CONE_ANGLE_RAD = Math.PI / 1.9;
+                const MAX_KICK_DISTANCE = 1.5;
+                const KICK_CONE_ANGLE_RAD = Math.PI;
                 const MIN_KICK_DOT = Math.cos(KICK_CONE_ANGLE_RAD);
 
                 const playerPos2D = new THREE.Vector2(this.playerBody.position.x, this.playerBody.position.z);

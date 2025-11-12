@@ -78,14 +78,14 @@ function initializeRoomState() {
     const ballBody = new CANNON.Body({
         mass: 0.43,
         shape: ballShape,
-        linearDamping: 0.1,
-        angularDamping: 0.1,
-        material: new CANNON.Material({ friction: 0.2, restitution: 0.8 }),
+        linearDamping: 0.7,
+        angularDamping: 0.5,
+        material: new CANNON.Material({ friction: 0.2, restitution: 0.6 }),
         collisionFilterGroup: GROUP_BALL, // Es la pelota
-        collisionFilterMask: GROUP_EVERYTHING // Colisiona con todo
+        collisionFilterMask: GROUP_BALL | GROUP_GROUND | GROUP_WALL | GROUP_GOAL | GROUP_NET // Colisiona con todo
     });
     ballBody.position.set(0, 0.32, 0);
-    ballBody.ccdSpeedThreshold = 80; // Si la pelota va a +80 m/s, activa CCD
+    ballBody.ccdSpeedThreshold = 10; // Si la pelota va a +80 m/s, activa CCD
     ballBody.ccdSweptSphereRadius = 0.22; // Debe ser igual al radio de la pelota (ballRadius)
     world.addBody(ballBody);
 
@@ -107,7 +107,7 @@ function initializeRoomState() {
     const goalHeight = 4;
     const wallHeight = 20;
     const goalWidth = 12;
-    const wallMat = new CANNON.Material({ friction: 0.1, restitution: 0.9 });
+    const wallMat = new CANNON.Material({ friction: 0.1, restitution: 0.6 });
     const sideSegmentWidth = (fieldWidth - goalWidth) / 2;
     const leftSegmentCenterX = -(fieldWidth + goalWidth) / 4;
     const rightSegmentCenterX = (fieldWidth + goalWidth) / 4;
@@ -307,7 +307,7 @@ io.on('connection', (socket) => {
             mass: 0, // Kinemático/Estático: su posición es controlada por el cliente
             shape: playerShape,
             collisionFilterGroup: GROUP_PLAYER,
-            collisionFilterMask: GROUP_EVERYTHING
+            collisionFilterMask: GROUP_PLAYER | GROUP_GROUND | GROUP_WALL | GROUP_GOAL | GROUP_NET
         });
         playerBody.socketId = socket.id;
 
@@ -383,7 +383,8 @@ io.on('connection', (socket) => {
 
             // Aplicar la patada en la física del SERVIDOR
             
-            // CORRECCIÓN: Líneas setZero() eliminadas para un tiro más fluido
+            room.ballBody.velocity.setZero();
+            room.ballBody.angularVelocity.setZero();
             
             // Simplemente aplica el impulso que llega del cliente
             const impulseVec = new CANNON.Vec3(data.impulse.x, data.impulse.y, data.impulse.z);
