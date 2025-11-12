@@ -596,6 +596,30 @@
 
         socket.on('roomState', (state) => {
             console.log('Estado de la sala recibido:', state);
+
+            // --- INICIO DE LA CORRECCIÓN PARA LATE-JOINERS ---
+
+            // 1. Sincronizar el marcador
+            if (state.gameState && state.gameState.score) {
+                this.score = state.gameState.score;
+                this.updateScore(); // Llama a la función que actualiza el HTML
+            }
+
+            // 2. Sincronizar el estado del saque (kickoff)
+            if (state.gameState) {
+                this.kickoffActive = state.gameState.kickoffActive;
+                this.currentKickoffTeam = state.gameState.currentKickoffTeam;
+
+                // Si el saque SÍ está activo al unirse, mostrar el indicador
+                if (this.kickoffActive) {
+                    this.showKickIndicator(`¡Saque ${this.currentKickoffTeam === 'blue' ? 'Azul' : 'Rojo'}!`);
+                    this.setPlayerKickoffCollision(true);
+                } else {
+                    // Si el saque NO está activo, asegurarse de que el jugador pueda moverse
+                    this.setPlayerKickoffCollision(false);
+                }
+            }
+            // --- FIN DE LA CORRECCIÓN ---
             
             // Resetear todos los botones primero
             document.querySelectorAll('.position-btn').forEach(btn => {
@@ -618,6 +642,8 @@
                 }
             }
         });
+
+        
 
         socket.on('positionOccupied', (message) => {
             alert(message);
@@ -708,7 +734,11 @@
                 this.mouseMovementY = 0;
                 this.swerveAccumX = 0;
                 this.swerveAccumY = 0;
-               
+
+                this.kickCooldown = 0; // Tiempo restante del cooldown
+                this.kickDelay = 0.3;  // 0.3 segundos de espera
+
+                
                 this.hud = document.getElementById('hud');
                 this.scoreDisplay = document.getElementById('score');
                 this.staminaFill = document.getElementById('stamina-fill');
@@ -1464,6 +1494,20 @@ socket.on('goalUpdate', (data) => {
             
             // REEMPLAZA ESTA FUNCIÓN COMPLETA
             executeKick() {
+                // 1. CÁLCULO DE POTENCIA (se hace primero para saber si es pase)
+                const chargeRatio = Math.min(this.chargeTime / this.maxChargeTime, 1);
+                const powerCurve = Math.pow(chargeRatio, 1.5);
+                const isPass = this.kickButton === 2; // Click derecho
+
+                // --- INICIO DE LA CORRECCIÓN (COOLDOWN) ---
+                // Si NO es un pase (es click izq) Y el cooldown está activo
+                if (!isPass && this.kickCooldown > 0) {
+                    this.isCharging = false;
+                    this.powerMeter.style.display = 'none';
+                    return; // Salir, no permitir el tiro
+                }
+                // --- FIN DE LA CORRECCIÓN ---
+
                 if (!this.isBallInKickArea()) {
                     this.isCharging = false;
                     this.powerMeter.style.display = 'none';
@@ -1483,22 +1527,14 @@ socket.on('goalUpdate', (data) => {
                     }
                 }
                
-                // 1. CÁLCULO DE POTENCIA
-                const chargeRatio = Math.min(this.chargeTime / this.maxChargeTime, 1);
-                // Usamos una curva más suave (pow 1.5) para que la potencia media sea más útil
-                const powerCurve = Math.pow(chargeRatio, 1.5);
-                const isPass = this.kickButton === 2; // Click derecho
-               
-                // Ajustamos la potencia base y máxima para tiros y pases
-                const BASE_POWER = isPass ? 6 : 12;
-                const MAX_POWER_BOOST = isPass ? 8 : 22; // Los tiros tienen mucho más rango
+                // Ajustamos la potencia base y máxima (CON CORRECCIONES PREVIAS)
+                const BASE_POWER = isPass ? 6 : 12; // Pase (clic-der) más suave
+                const MAX_POWER_BOOST = isPass ? 8 : 22; // Pase (clic-der) más suave
                 const power = BASE_POWER + (MAX_POWER_BOOST * powerCurve);
                
-                // 2. CÁLCULO DE DIRECCIÓN (¡LA MEJORA CLAVE!)
-                // Obtenemos la dirección exacta a la que apunta la cámara
+                // 2. CÁLCULO DE DIRECCIÓN
                 const kickDir = new THREE.Vector3();
                 this.camera.getWorldDirection(kickDir); 
-                // ¡Ya no limitamos la altura! Ahora respetará tu mira.
 
                 // 3. LÓGICA DE PASE
                 if (isPass) {
@@ -1516,7 +1552,7 @@ socket.on('goalUpdate', (data) => {
                 // Este es el vector de fuerza puro.
                 const finalImpulse = kickDir.multiplyScalar(power);
 
-                // 5. CÁLCULO DE EFECTO (SWERVE/LIFT) (¡LA SEGUNDA MEJORA CLAVE!)
+                // 5. CÁLCULO DE EFECTO (SWERVE/LIFT)
                 let finalAngularVel = new THREE.Vector3(0, 0, 0);
                 
                 // Solo aplicamos efecto si no es un pase y si hubo movimiento de mouse
@@ -1524,7 +1560,7 @@ socket.on('goalUpdate', (data) => {
                     
                     const MAX_SWERVE_ACCUM = 250; // Límite de cuánto efecto puedes acumular
                     const SWERVE_POWER = 0.22;    // Qué tanto gira hacia los lados
-                    const LIFT_POWER = 0.22;      // Qué tanto sube o baja (topspin/backspin)
+                    const LIFT_POWER = 0.22;      // (CON CORRECCIÓN PREVIA)
 
                     // Limitamos el efecto acumulado
                     const swerveX = Math.sign(this.swerveAccumX) *
@@ -1540,12 +1576,9 @@ socket.on('goalUpdate', (data) => {
                     const up = new THREE.Vector3().crossVectors(forward, right).normalize();
                     
                     // Movimiento horizontal (swerveX) aplica spin alrededor del eje 'up'
-                    // (Mouse izq -> swerveX negativo -> spin en Y negativo -> curva a la izq)
                     const sideSpin = up.multiplyScalar(-swerveX * SWERVE_POWER * powerCurve);
                     
                     // Movimiento vertical (swerveY) aplica spin alrededor del eje 'right'
-                    // (Mouse arriba -> swerveY negativo -> spin en X positivo -> "lift" o "knuckle")
-                    // (Mouse abajo -> swerveY positivo -> spin en X negativo -> "topspin" o "dipping")
                     const liftSpin = right.multiplyScalar(-swerveY * LIFT_POWER * powerCurve);
 
                     // Combinamos ambos spins en el vector de velocidad angular final
@@ -1553,13 +1586,18 @@ socket.on('goalUpdate', (data) => {
                 }
 
                 // 6. EMITIR AL SERVIDOR
-                // Enviamos el impulso PURO y la velocidad angular PURA.
-                // Tu server.js ahora recibirá esto y deberá aplicarlo al ballBody.
                 socket.emit('playerKicked', {
                     room: currentRoomCode,
                     impulse: { x: finalImpulse.x, y: finalImpulse.y, z: finalImpulse.z },
                     angularVelocity: { x: finalAngularVel.x, y: finalAngularVel.y, z: finalAngularVel.z }
                 });
+
+                // --- INICIO DE LA CORRECCIÓN (COOLDOWN) ---
+                // Si NO fue un pase (fue click izq), activar el cooldown
+                if (!isPass) {
+                    this.kickCooldown = this.kickDelay;
+                }
+                // --- FIN DE LA CORRECCIÓN ---
                
                 this.isCharging = false;
                 this.powerMeter.style.display = 'none';
@@ -1738,6 +1776,10 @@ socket.on('goalUpdate', (data) => {
             animate() {
                 requestAnimationFrame(() => this.animate());
                 const dt = Math.min(this.clock.getDelta(), 0.1);
+
+                if (this.kickCooldown > 0) {
+                    this.kickCooldown -= dt;
+                }
                 
                 if (this.playerBody) {
                     const extraAccel = this.playerGravity - this.world.gravity.y;
