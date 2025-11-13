@@ -535,11 +535,40 @@ function gameLoop(roomCode) {
             });
             setTimeout(() => {
                 if (activeRooms[roomCode]) {
+                    // 1. Resetear la pelota (como antes)
                     room.ballBody.position.set(0, 0.32, 0);
                     room.ballBody.velocity.set(0, 0, 0);
                     room.ballBody.angularVelocity.set(0, 0, 0);
+                    
+                    // 2. Resetear el estado del juego (como antes)
                     room.gameState.kickoffActive = true;
                     room.gameState.goalScoredRecently = false;
+
+                    // --- INICIO DE LA CORRECCIÓN ---
+                    // 3. Iterar sobre TODOS los jugadores y resetearlos
+                    for (const socketId in room.players) {
+                        const playerInfo = room.players[socketId];
+                        const playerBody = room.playerBodies[socketId];
+                        
+                        if (playerInfo && playerBody) {
+                            // Obtener la posición de inicio de ESE jugador
+                            const startPos = getStartPosition(playerInfo.team, playerInfo.position);
+                            
+                            // Resetear la física de ese jugador EN EL SERVIDOR
+                            playerBody.position.copy(startPos);
+                            playerBody.velocity.set(0, 0, 0);
+                            playerBody.angularVelocity.set(0, 0, 0);
+
+                            // Notificar a TODOS los clientes que este jugador se movió a su spawn
+                            io.to(roomCode).emit('playerMoved', {
+                                playerId: socketId,
+                                position: startPos, // La nueva posición de spawn
+                                rotation: playerInfo.team === 'blue' ? 0 : Math.PI, // Resetear mirada
+                                velocity: { x: 0, y: 0, z: 0 }
+                            });
+                        }
+                    }
+                    // --- FIN DE LA CORRECCIÓN ---
                 }
             }, 3000);
 
