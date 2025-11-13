@@ -773,10 +773,39 @@
 
                 socket.on('playerMoved', (data) => {
                     const otherPlayer = this.otherPlayers[data.playerId];
+                    
                     if (otherPlayer) {
+                        // Lógica existente para OTROS jugadores
                         otherPlayer.targetPosition = new THREE.Vector3(data.position.x, data.position.y, data.position.z);
                         otherPlayer.targetRotation = data.rotation;
+
+                        // Si es un reset (velocidad 0), teletransportar visualmente
+                        if (data.velocity.x === 0 && data.velocity.z === 0) {
+                            otherPlayer.mesh.position.set(data.position.x, data.position.y + 0.4, data.position.z);
+                            otherPlayer.body.position.copy(data.position);
+                        }
+
+                    } 
+                    // --- INICIO DE LA CORRECCIÓN ---
+                    else if (data.playerId === socket.id) {
+                        // ¡Es un reseteo de posición para MÍ!
+                        console.log('Recibido reset de posición del servidor.');
+                        const startPos = new THREE.Vector3(data.position.x, data.position.y, data.position.z);
+                        
+                        // Resetear mi cuerpo físico
+                        this.playerBody.position.copy(startPos);
+                        this.playerBody.velocity.set(0, 0, 0);
+                        this.playerBody.angularVelocity.set(0, 0, 0);
+
+                        // Sincronizar mi malla visual
+                        this.playerMesh.position.copy(this.playerBody.position);
+                        this.playerMesh.position.y += 0.4;
+                        
+                        // Resetear la cámara
+                        this.cameraOrbit.yaw = data.rotation;
+                        this.updateCamera(); // Actualizar la cámara inmediatamente
                     }
+                    // --- FIN DE LA CORRECCIÓN ---
                 });
 
                 socket.on('ballSync', (data) => {
