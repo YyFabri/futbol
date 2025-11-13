@@ -723,6 +723,8 @@
                 this.mouseMovementY = 0;
                 this.swerveAccumX = 0;
                 this.swerveAccumY = 0;
+
+                this.kickDirOnChargeStart = new THREE.Vector3();
                 
                 // --- CAMBIO: Cooldown de Tiro ---
                 this.kickCooldown = 0; // Tiempo restante del cooldown
@@ -1514,6 +1516,7 @@
                     this.kickButton = e.button;
                     this.swerveAccumX = 0; 
                     this.swerveAccumY = 0; 
+                    this.camera.getWorldDirection(this.kickDirOnChargeStart);
                     this.powerMeter.style.display = 'block';
                 });
                 
@@ -1537,7 +1540,7 @@
                 const powerCurve = Math.pow(chargeRatio, 1.5);
                 const isPass = this.kickButton === 2; // Click derecho
 
-                // --- INICIO: COOLDOWN (de la vez pasada) ---
+                // --- INICIO: COOLDOWN ---
                 if (!isPass && this.kickCooldown > 0) {
                     this.isCharging = false;
                     this.powerMeter.style.display = 'none';
@@ -1571,12 +1574,12 @@
                
                 // 2. CÁLCULO DE DIRECCIÓN
                 const kickDir = new THREE.Vector3();
-                this.camera.getWorldDirection(kickDir); // Default para TIRO (Click Izq)
+                // (No calculamos la dirección aquí todavía)
 
                 // 3. LÓGICA DE PASE (Y NUEVA DIRECCIÓN)
                 if (isPass) {
                     
-                    // --- INICIO: LÓGICA DE PASE DIRECCIONAL (NUEVO) ---
+                    // --- INICIO: LÓGICA DE PASE DIRECCIONAL (Sin cambios) ---
                     const passMoveDir = new THREE.Vector3();
                     if (this.keys['w']) passMoveDir.z += 1;
                     if (this.keys['s']) passMoveDir.z -= 1;
@@ -1589,22 +1592,21 @@
 
                     if (passMoveDir.lengthSq() > 0) {
                         passMoveDir.normalize();
-                        // Calcular la dirección final del pase relativa a la cámara
-                        kickDir.set(0, 0, 0); // Resetear kickDir
+                        kickDir.set(0, 0, 0); 
                         kickDir.addScaledVector(forward, passMoveDir.z);
                         kickDir.addScaledVector(right, passMoveDir.x);
                     } else {
-                        // Si no se presiona nada, el pase va hacia adelante (como 'w')
                         kickDir.copy(forward);
                     }
                     
-                    // Forzar el pase a ser raso (casi)
                     kickDir.y = 0.05; 
                     kickDir.normalize();
                     // --- FIN: LÓGICA DE PASE DIRECCIONAL ---
 
                 } else {
-                    // Para tiros (Click Izq), simplemente normalizamos la dirección de la cámara
+                    // --- ¡¡AQUÍ ESTÁ LA CORRECCIÓN!! ---
+                    // Para tiros (Click Izq), usamos la dirección guardada al inicio
+                    kickDir.copy(this.kickDirOnChargeStart); 
                     kickDir.normalize();
                 }
 
@@ -1618,29 +1620,25 @@
                     
                     const MAX_SWERVE_ACCUM = 250; 
                     const SWERVE_POWER = 0.22;
-                    const LIFT_POWER = 0.22; // (Potencia de lift)
+                    const LIFT_POWER = 0.30; // (Tu valor actual)
 
-                    // --- INICIO: AJUSTE DE CURVA DE LIFT (NUEVO) ---
-                    
                     // Lógica de Side-Spin (X) - Lineal
                     const swerveX = Math.sign(this.swerveAccumX) *
                       Math.min(Math.abs(this.swerveAccumX), MAX_SWERVE_ACCUM);
                     
                     // Lógica de Lift-Spin (Y) - No-Lineal
                     const liftRatio = Math.min(Math.abs(this.swerveAccumY), MAX_SWERVE_ACCUM) / MAX_SWERVE_ACCUM;
-                    // Aplicamos una curva (potencia < 1) para más sensibilidad en movimientos pequeños
-                    const curvedLiftRatio = Math.pow(liftRatio, 0.50); 
+                    const curvedLiftRatio = Math.pow(liftRatio, 0.50); // (Tu valor actual)
                     const swerveY = Math.sign(this.swerveAccumY) * curvedLiftRatio * MAX_SWERVE_ACCUM;
                     
-                    // --- FIN: AJUSTE DE CURVA DE LIFT ---
-                   
                     // Calculamos los ejes de rotación RELATIVOS
                     const forward = new THREE.Vector3().copy(finalImpulse).normalize();
                     const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), forward).normalize();
                     const up = new THREE.Vector3().crossVectors(forward, right).normalize();
                     
-                    // Aplicar spin usando las nuevas variables
                     const sideSpin = up.multiplyScalar(-swerveX * SWERVE_POWER * powerCurve);
+                    
+                    // (Esta línea ya está correcta, sin el negativo)
                     const liftSpin = right.multiplyScalar(swerveY * LIFT_POWER * powerCurve);
 
                     finalAngularVel.add(sideSpin).add(liftSpin);
@@ -1653,7 +1651,7 @@
                     angularVelocity: { x: finalAngularVel.x, y: finalAngularVel.y, z: finalAngularVel.z }
                 });
 
-                // --- INICIO: COOLDOWN (de la vez pasada) ---
+                // --- INICIO: COOLDOWN ---
                 if (!isPass) {
                     this.kickCooldown = this.kickDelay;
                 }
